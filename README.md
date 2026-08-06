@@ -31,7 +31,7 @@ The best way to support the project (and Saphi in general) is to use it while st
 I'm not very good at the whole "letting people know you exist" side of development, so any public use of the dashboard is appreciated.
 
 Giving clear feedback about what's bugs and features is also incredibly valuable, so it remains useful for you and others.
-We have a list of issues on this repository; you can react positively or negatively to existing issues to help us prioritize certain items.
+Known issues and feature requests are tracked [here](https://github.com/Hyreon/SaphiDashboard/issues). You can cast your vote for features by reacting positively, report new issues, or comment on existing ones.
 
 ## Thank you! :heart:
 
