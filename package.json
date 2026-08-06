@@ -1,0 +1,11 @@
+{
+  "name": "SaphiWebsite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "serve public",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": true
+}
