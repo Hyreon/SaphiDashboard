@@ -3,11 +3,10 @@
 <head>
 <meta charset="utf-8">
 <title>Saphi dashboard</title>
-<link rel="stylesheet" href="style/standards.css">
 <style>
   @font-face {
     font-family: 'Crash-a-Like';
-    src: url('crash-a-like.ttf');
+    src: url('/assets/crash-a-like-DBHqa3xp.ttf');
   }
   html, body {
     margin: 0;
@@ -149,13 +148,15 @@
   }
 
 </style>
+  <script type="module" crossorigin src="/assets/index-4aLYfCO3.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cu_u6xvb.css">
 </head>
 <body>
 
 <div class="columns" id="columns">
   <div class="overlay" id="overlay">
     <div class="header header-overlay" id="row-image">
-      <img src="saphi_logo.webp" alt="Saphi Logo">
+      <img src="/assets/saphi_logo-BXNEsQZo.webp" alt="Saphi Logo">
     </div>
     <div class="row" id="row-session">
       <div class="eyebrow">Session Best</div>
@@ -406,10 +407,6 @@
 
 <div id="ai-badge">✦ AI-generated</div>
 
-<script type="module">
-  import { init } from '@hyreon/voronoi';
-  init([[15,60,90],[10,15,35],[20,80,100],[12,12,30],[10,50,75],[15,18,40],[25,70,85]]);
-</script>
 
 <script>
 /*
@@ -608,25 +605,14 @@ function render(data) {
   pbSub.style.color = '#aaaaaa';
 
   if (data.totals) {
+    // extra changes - not part of the main render step
 
     const laps_completed = data.totals.laps_won;
     const courses_completed = data.totals.courses_won;
     const completion_label = data.totals.label;
-    const el_completion_courses = document.getElementById('completion-courses');
-    const el_completion_laps = document.getElementById('completion-laps');
-    el_completion_courses.textContent = `${courses_completed}/${data.totals.courses_total} Courses`;
-    el_completion_laps.textContent = `${laps_completed}/${data.totals.laps_total} Laps`;
+    document.getElementById('completion-courses').textContent = `${courses_completed}/${data.totals.courses_total} Courses`;
+    document.getElementById('completion-laps').textContent = `${laps_completed}/${data.totals.laps_total} Laps`;
     document.getElementById('overall-category').textContent = completion_label;
-    if (courses_completed === data.totals.courses_total) {
-      el_completion_courses.style.color = "#3dc1ea";
-    } else {
-      el_completion_courses.style.color = null;
-    }
-    if (laps_completed === data.totals.laps_total) {
-      el_completion_laps.style.color = "#3dc1ea";
-    } else {
-      el_completion_laps.style.color = null;
-    }
   }
 }
 
@@ -1063,10 +1049,6 @@ Promise.allSettled([loadTracks(), loadStandards(), loadPlayers()])
 // }, 1000);
 </script>
 
-<script type="module">
-  import { init } from '@hyreon/ai-badge';
-  init();
-</script>
 
 </body>
 </html>

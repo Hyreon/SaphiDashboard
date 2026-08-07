@@ -9,8 +9,8 @@
   },
   "private": true,
   "dependencies": {
-    "@hyreon/voronoi": "^1.0.0",
-    "@hyreon/ai-badge": "^1.0.0"
+    "@hyreon/ai-badge": "^1.0.0",
+    "@hyreon/voronoi": "^1.0.0"
   },
   "devDependencies": {
     "vite": "^8.2.1"
