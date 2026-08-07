@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <title>Saphi dashboard</title>
 <link rel="stylesheet" href="style/standards.css">
-<link rel="stylesheet" href="/ai-badge.css">
 <style>
   @font-face {
     font-family: 'Crash-a-Like';
@@ -408,7 +407,7 @@
 <div id="ai-badge">✦ AI-generated</div>
 
 <script type="module">
-  import { init } from '/voronoi.js';
+  import { init } from '@hyreon/voronoi';
   init([[15,60,90],[10,15,35],[20,80,100],[12,12,30],[10,50,75],[15,18,40],[25,70,85]]);
 </script>
 
@@ -1053,7 +1052,10 @@ Promise.allSettled([loadTracks(), loadStandards(), loadPlayers()])
 // }, 1000);
 </script>
 
-<script src="/ai-badge.js"></script>
+<script type="module">
+  import { init } from '@hyreon/ai-badge';
+  init();
+</script>
 
 </body>
 </html>
