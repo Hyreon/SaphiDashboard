@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Saphi dashboard</title>
+<style>
+  @font-face {
+    font-family: 'Crash-a-Like';
+    src: url('/saphi/assets/crash-a-like-DBHqa3xp.ttf');
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+  }
+  body.is-loading {
+    cursor: progress;
+  }
+  .overlay {
+    width: 283px;
+    height: 800px;
+    flex: 0 0 283px;
+    box-sizing: border-box;
+    background: rgba(10, 11, 13, 0.82);
+    background-image: repeating-linear-gradient( 45deg, transparent, transparent 20px, rgba(255, 255, 255, 0.02) 20px, rgba(255, 255, 255, 0.02) 40px );
+    border-radius: 0px;
+    color: #f2f2f0;
+    font-family: Crash-a-Like, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .overlay-settings {
+    width: 283px;
+    height: 650px;
+    flex: 0 0 283px;
+    box-sizing: border-box;
+    background: rgba(50, 55, 65, 0.82);
+    border-radius: 0px;
+    color: #f2f2f0;
+    font-family: Crash-a-Like, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .columns {
+    display: flex;
+    flex-direction: row;
+  }
+  .header {
+      position: relative;
+      flex: 0 0 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      font-size: 48px;
+  }
+  .header-overlay {
+    background: #1e2132;
+  }
+  .header-settings {
+    background: #323741;
+  }
+  .row {
+      position: relative;
+      flex: 0 0 128px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 6px 10px;
+  }
+  .footer {
+    position: relative;
+    flex: 0 0 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 6px 10px;
+  }
+  .row-setting {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+  }
+  .row + .row {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .eyebrow {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      font-size: 24px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #fafdf4;
+  }
+  .eyebrow-sub {
+      position: absolute;
+      top: 28px;
+      left: 10px;
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #b0b0b0;
+  }
+  .main {
+    font-family: system-ui, -apple-system, "Segoe UI";
+    font-size: 36px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: #f2f2f0;
+  }
+  .main.tier {
+    font-size: 36px;
+    letter-spacing: 0.06em;
+    color: #e8b23d;
+  }
+  .sub {
+    font-family: system-ui, -apple-system, "Segoe UI";
+    font-size: 18px;
+    color: #b0b2b8;
+    margin-top: 3px;
+    text-align: right;
+  }
+  .sub-fancy {
+    font-family: "Crash-a-Like", serif;
+    font-size: 18px;
+    color: #b0b2b8;
+    margin-top: 3px;
+    text-align: right;
+  }
+  .placeholder {
+    font-family: system-ui, sans-serif;
+    font-weight: 400;
+    color: #6b6f76;
+  }
+  .iframe {
+    overflow: scroll;
+    width: 1500px;
+    height: 500px;
+    border: 1px solid black;
+  }
+
+</style>
+  <script type="module" crossorigin src="/saphi/assets/index-C3sIGNwy.js"></script>
+  <link rel="stylesheet" crossorigin href="/saphi/assets/index-NgEYv7uM.css">
+</head>
+<body>
+
+<div class="columns" id="columns">
+  <div class="overlay" id="overlay">
+    <div class="header header-overlay" id="row-image">
+      <img src="/saphi/assets/saphi_logo-BXNEsQZo.webp" alt="Saphi Logo">
+    </div>
+    <div class="row" id="row-session">
+      <div class="eyebrow">Session Best</div>
+      <div class="main" id="session-main">1:12.44</div>
+      <div class="sub" id="session-sub">14 attempts</div>
+    </div>
+    <div class="row" id="row-pb">
+      <div class="eyebrow">PB</div>
+      <div class="main" id="pb-main">1:12.44</div>
+      <div class="sub" id="pb-sub">First attempt on this track: 1:45.90</div>
+    </div>
+    <div class="row" id="row-goal">
+      <div class="eyebrow" id="goal-label">BIC</div>
+      <span id="goal-image"></span>
+      <div class="eyebrow-sub" id="goal-reason">Hey over here</div>
+      <div class="main" id="goal-main">1:04.22</div>
+      <div class="sub" id="goal-sub">+8.22</div>
+    </div>
+    <div class="footer header-overlay" id="row-overall">
+      <div class="eyebrow" id="overall-label">Completion</div>
+      <div class="eyebrow-sub" id="overall-category">Hero times</div>
+      <div class="sub-fancy" id="completion-courses">25/26 courses</div>
+      <div class="sub-fancy" id="completion-laps">25/26 laps</div>
+    </div>
+  </div>
+  <div class="overlay-settings" id="settings">
+    <div class="header header-settings" id="settings-top">
+      <div>Settings</div>
+    </div>
+    <div class="row-setting" id="username-region">
+      <label for="username">Username</label>
+      <input id="username"
+             name="username"
+             type="text"
+             placeholder="BarelyTrying"
+             style="width: 10em">
+    </div>
+<!--    <div class="row-setting" id="timestamp-region">-->
+<!--      <label for="timestamp">Start Time</label>-->
+<!--      <div>-->
+<!--        <button>Now</button>-->
+<!--        <input id="timestamp"-->
+<!--               name="timestamp"-->
+<!--               type="time"-->
+<!--               placeholder="12:00 PM">-->
+<!--        <button>Set</button>-->
+<!--      </div>-->
+<!--    </div>-->
+    <div class="row-setting" id="target-region">
+      <div>
+        <label for="target">Objective</label>
+        <select name="target" id="target">
+          <option value="">Custom</option>
+          <option value="standard">Achieve a Standard</option>
+          <option value="user">Defeat a Rival</option>
+          <option value="rank">Reach a Rank</option>
+          <option value="percentile">Reach a Percentile</option>
+          <option value="ctr4ever">Improve ctr4ever times</option>
+        </select>
+      </div>
+      <div class="target-detail" data-target="standard" hidden="hidden">
+        <label for="target-standard">Standard</label>
+        <select name="target-standard" id="target-standard">
+          <option value="-1">Unknown</option>
+        </select>
+      </div>
+      <div class="target-detail" data-target="user" hidden="hidden">
+        <label for="target-user">Rival</label>
+        <input
+               name="target-user"
+               id="target-user"
+               type="text"
+               placeholder="BarelyTrying">
+      </div>
+      <div class="target-detail" data-target="ctr4ever" hidden="hidden">
+        <text>*ctr4ever times as of 2026-08-08</text><br>
+        <label for="target-ctr4ever">username</label>
+        <input
+                name="target-ctr4ever"
+                id="target-ctr4ever"
+                type="text"
+                placeholder="crash68">
+      </div>
+      <div class="target-detail" data-target="rank" hidden="hidden">
+        <label for="target-rank">Rank</label>
+        <input name="target-rank"
+               id="target-rank"
+               type="number"
+               placeholder=1>
+      </div>
+      <div class="target-detail" data-target="percentile" hidden="hidden">
+        <label for="target-percentile">Percentile</label>
+        <input name="target-percentile"
+               id="target-percentile"
+               type="number"
+               min="0"
+               max="100"
+               placeholder=100>
+      </div>
+    </div>
+    <div class="row-setting" id="track-region">
+      <div>
+        <label for="track-type">Track Type</label>
+        <select name="track-type" id="track-type">
+          <option value="">All tracks</option>
+          <option value="saphi">Saphi</option>
+          <option value="community">Community</option>
+          <option value="original">Original</option>
+        </select>
+      </div>
+      <div>
+        <label for="track">track</label>
+        <select name="track" id="track">
+          <option value="0">None</option>
+        </select>
+      </div>
+      <div>
+        <label for="category">category</label>
+        <select name="category" id="category">
+          <option value="1">Course</option>
+          <option value="2">Lap</option>
+        </select>
+      </div>
+    </div>
+    <!-- for sorting categories when we start showing them in a list -->
+<!--    <div class="row-setting" id="category-region">-->
+<!--      <label for="category">Category Sort Order</label>-->
+<!--      <select name="category" id="category">-->
+<!--        <option value="-1">Separate</option>-->
+<!--        <option value="0">Sort by Easier</option>-->
+<!--        <option value="1">Sort by Harder</option>-->
+<!--      </select>-->
+<!--    </div>-->
+<!--    <div class="row-setting" id="sort-by-region">-->
+<!--      <label for="sort-by">Sort By</label>-->
+<!--      <select name="sort-by" id="sort-by">-->
+<!--        <option value="-1">Saphi Order</option>-->
+<!--        <option value="0">User Percentile</option>-->
+<!--        <option value="1">Time Ratio</option>-->
+<!--        <option value="2">Time Difference</option>-->
+<!--      </select>-->
+<!--    </div>-->
+<!--    <div class="row-setting" id="filter-region">-->
+<!--      <label for="filter-engine">Filters</label>-->
+<!--      <select name="filter-engine" id="filter-engine">-->
+<!--        <option value="-1">Any</option>-->
+<!--        <option value="0">Speed</option>-->
+<!--        <option value="1">Balanced</option>-->
+<!--        <option value="2">Acceleration</option>-->
+<!--        <option value="3">Turning</option>-->
+<!--      </select>-->
+<!--      <select name="filter-country" id="filter-country">-->
+<!--        <option value="-1">Any</option>-->
+<!--      </select>-->
+<!--    </div>-->
+    <div class="row-setting" id="rebind-region">
+        <label for="rebind-button">Update button</label>
+        <button id="rebind-button" onclick="unbindButton()">Not bound...</button>
+        <label>*Use as Browser Source with OBS to get button presses off screen</label>
+    </div>
+    <!-- TODO set whether manual fields are updated automatically with a checkbox -->
+    <!-- TODO set whether ties are wins or losses with a dropdown menu -->
+    <div class="row-setting">
+      <label for="load-auto">Confirm the above and load</label>
+      <button id="load-auto">Load</button>
+    </div>
+  </div>
+  <div class="overlay-settings" id="manual">
+    <div class="header header-settings" id="manual-top">
+      <div>Manual</div>
+    </div>
+    <div class="row-setting" id="session-best-set-region">
+      <label for="session-best-set">Session Best</label>
+      <input id="session-best-set"
+             name="session-best"
+             type="text"
+             step="1"
+             style="width: 10em">
+    </div>
+    <div class="row-setting" id="attempt-set-region">
+      <label for="attempt-set">Attempts</label>
+      <input id="attempt-set"
+             name="attempt"
+             type="number"
+             style="width: 3em"
+             value="0">
+    </div>
+    <div class="row-setting" id="personal-best-set-region">
+      <label for="personal-best-set">Personal Best</label>
+      <input id="personal-best-set"
+             name="personal-best"
+             type="text"
+             style="width: 10em">
+    </div>
+    <div class="row-setting" id="target-time-set-region">
+      <label for="target-time-set">Target Time</label>
+      <input id="target-time-set"
+             name="target-time"
+             type="text"
+             style="width: 10em">
+    </div>
+    <div class="row-setting" id="factoid-set-region">
+      <label for="factoid-set">Factoid</label>
+      <input id="factoid-set"
+             name="factoid"
+             type="text"
+             style="width: 10em">
+    </div>
+    <div class="row-setting" id="target-label-set-region">
+      <label for="target-label-set">Label</label>
+      <input id="target-label-set"
+             name="target-label-set"
+             type="text"
+             style="width: 10em"
+             value="standard-5">
+    </div>
+    <div class="row-setting" id="completion-label-set-region">
+      <label for="completion-label-set">Completion Label</label>
+      <input id="completion-label-set"
+             name="completion-label-set"
+             type="text"
+             style="width: 10em"
+             value="Hero Times">
+      <div>
+        <label for="completion-courses-set">Course</label>
+        <input id="completion-courses-set"
+               name="completion-courses-set"
+               type="number"
+               style="width: 3em"
+               value="0">
+        <label for="completion-laps-set">Lap</label>
+        <input id="completion-laps-set"
+               name="completion-laps-set"
+               type="number"
+               style="width: 3em"
+               value="0">
+      </div>
+      <div>
+        <label for="completion-courses-total-set">Total</label>
+        <input id="completion-courses-total-set"
+               name="completion-courses-total-set"
+               type="number"
+               style="width: 3em"
+               value="0">
+        <label for="completion-laps-total-set">Total</label>
+        <input id="completion-laps-total-set"
+               name="completion-laps-total-set"
+               type="number"
+               style="width: 3em"
+               value="0">
+      </div>
+    </div>
+    <div class="row-setting" id="submit-manual-records">
+      <button onclick="manualRender()">Submit</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="ai-badge">✦ AI-generated</div>
+
+
+
+
+</body>
+</html>

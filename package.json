@@ -3,9 +3,9 @@
   "version": "1.0.1",
   "description": "Dashboard for Saphi",
   "scripts": {
-    "dev": "vite public",
-    "build": "vite build public",
-    "preview": "vite preview public"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "private": true,
   "dependencies": {
