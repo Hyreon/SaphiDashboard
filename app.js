@@ -406,6 +406,11 @@ loadButton.addEventListener('click', () => {
     autoRender()
 });
 
+const loadManualButton = document.getElementById('load-manual');
+loadManualButton.addEventListener('click', () => {
+    manualRender()
+});
+
 async function autoRender() {
 
     const username = getUser();
