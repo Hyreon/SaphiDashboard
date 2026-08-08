@@ -213,6 +213,7 @@
           <option value="user">Defeat a Rival</option>
           <option value="rank">Reach a Rank</option>
           <option value="percentile">Reach a Percentile</option>
+          <option value="ctr4ever">Improve ctr4ever times</option>
         </select>
       </div>
       <div class="target-detail" data-target="standard" hidden="hidden">
@@ -228,6 +229,15 @@
                id="target-user"
                type="text"
                placeholder="BarelyTrying">
+      </div>
+      <div class="target-detail" data-target="ctr4ever" hidden="hidden">
+        <text>*ctr4ever times as of 2026-08-08</text><br>
+        <label for="target-ctr4ever">username</label>
+        <input
+                name="target-ctr4ever"
+                id="target-ctr4ever"
+                type="text"
+                placeholder="crash68">
       </div>
       <div class="target-detail" data-target="rank" hidden="hidden">
         <label for="target-rank">Rank</label>
@@ -250,9 +260,10 @@
       <div>
         <label for="track-type">Track Type</label>
         <select name="track-type" id="track-type">
+          <option value="">All tracks</option>
           <option value="saphi">Saphi</option>
           <option value="community">Community</option>
-          <option value="">Both</option>
+          <option value="original">Original</option>
         </select>
       </div>
       <div>
@@ -448,9 +459,13 @@
   Delete the demo cycle at the bottom once real data is wired in.
 */
 
+const DOMAIN = "http://localhost:3003"; //prod: hyreon.top/saphi/api
+
 let tracks = [];
 let players = [];
 let standards = [];
+let ctr4ever = {}; //ctr4ever records
+let records = {}; //cache of records, currently unused
 let track_priorities = {}; //includes a difference and a tier, which can independently be used to determine priority
 
 window.addEventListener("gamepadconnected", (event) => {
@@ -719,6 +734,14 @@ class Target {
     if (this.type === 'rank') {
       return entries.find(entry => entry.rank === parseInt(this.value));
     }
+    if (this.type === 'percentile') {
+      const candidates = entries
+              .filter(entry => entry.percentile >= parseInt(this.value))  // must be at least the target percentile
+
+      return candidates.length > 0
+              ? candidates.reduce((a, b) => a.percentile < b.percentile ? a : b)  // get the lowest percentile
+              : null;  // if there are no submissions, return none
+    }
     if (this.type === 'standard') {
       const syntheticEntry = {
         time_formatted: '0:00.00',
@@ -733,13 +756,11 @@ class Target {
       }
       return syntheticEntry;
     }
-    if (this.type === 'percentile') {
-      const candidates = entries
-              .filter(entry => entry.percentile >= parseInt(this.value))  // must be at least the target percentile
-
-      return candidates.length > 0
-              ? candidates.reduce((a, b) => a.percentile < b.percentile ? a : b)  // get the lowest percentile
-              : null;  // if there are no submissions, return none
+    if (this.type === 'ctr4ever') {
+      return ctr4ever[context.track_id][context.category_id].find(entry => entry.name === this.value);
+    }
+    if (this.type === 'user') {
+      return entries.find(entry => entry.name === this.value);
     }
   }
 
@@ -832,6 +853,24 @@ async function autoRender() {
       })
     })
       .then(async data => {
+        if (target.type === 'ctr4ever') {
+          await apiAction({
+            body: JSON.stringify({
+              endpoint: 'ctr4ever',
+              params: {
+                track: tracks.find(track => track['id'] === track_id)['name'],
+                category: category_id === 1 ? 'course' : 'lap'
+              }
+            })
+          })
+            .then(async data => {
+              ctr4ever[track_id] ||= {};
+              ctr4ever[track_id][category_id] = data["data"];
+            })
+        }
+        return data;
+      })
+      .then(async data => {
         let entries = data["data"];
 
         const target_time_el = document.getElementById('target-time-set');
@@ -852,7 +891,6 @@ async function autoRender() {
         if (target_match) {
           //set the manual field as a side effect
           target_time_el.value = target_match.time_formatted
-          console.log(target_match)
         }
 
         const pb_time = (pb_match ? pb_match.time_formatted : null);
@@ -896,7 +934,7 @@ async function apiAction(json) {
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
 
-  return await fetch("https://hyreon.top/saphi/api/webhook", {
+  return await fetch(DOMAIN + "/webhook", {
     ...json,
     headers: myHeaders,
     method: 'POST'
@@ -976,6 +1014,24 @@ async function loadTracks() {
       tracks.forEach(track => {
         select.add(new Option(track.name, track.id));
       })
+    })
+    .then(_ => { //new set of tracks means we need to update whether ctr4ever targets are visible
+      let target = document.getElementById('target');
+      let options = [...target.options];
+      if (trackTypeSelect.value === 'original') {
+        options.find(option => option.value === 'ctr4ever').disabled = false;
+      } else {
+        options.find(option => option.value === 'ctr4ever').disabled = true;
+        if (target.selectedOptions[0]?.disabled) {
+          const firstEnabledOption = Array.from(target.options)
+                  .find(option => !option.disabled);
+          if (firstEnabledOption) {
+            target.value = firstEnabledOption.value;
+
+            target.dispatchEvent(new Event('change'));
+          }
+        }
+      }
     })
 }
 

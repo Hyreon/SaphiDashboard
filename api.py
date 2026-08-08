@@ -1,4 +1,5 @@
 import json
+from datetime import date, datetime
 
 import flask_cors
 import requests
@@ -19,6 +20,13 @@ if not API_KEY:
 SAFETY_LIMIT = 30
 limit = [120, 1]
 auth = True
+
+ctr4ever = None
+try:
+    with open("ctr4ever-data.json", "r", encoding="utf-8") as file:
+        ctr4ever = json.load(file)
+except Exception as e:
+    print("Something went wrong while loading ctr4ever data file!")
 
 class Endpoint:
 
@@ -210,6 +218,15 @@ def join_data(fetch_all_results):
 app = flask.Flask(__name__)
 flask_cors.CORS(app)
 
+def to_ctr4ever_clean_name(track):
+    if track == "Roo's Tubes":
+        return "Roo Tubes"
+    if track == "Papu's Pyramid":
+        return "Papu Pyramid"
+    if track == "N. Gin Labs":
+        return "N.Gin Labs"
+    return track
+
 def get_flask_response():
     data = flask.request.get_json(silent=True) or {}
 
@@ -238,6 +255,12 @@ def get_flask_response():
 
     # TODO auth check
 
+    if endpoint_name == "ctr4ever":  # not a saphi API request
+        track = to_ctr4ever_clean_name(params["track"])
+        data = ctr4ever[track][params["category"]]
+        data_date = datetime.fromisoformat(ctr4ever["meta"]["date"])
+        return flask.jsonify({"status": "success", "timestamp": data_date, "data": data})
+
     try:
         if paginate:
             if auth:
@@ -257,7 +280,7 @@ def get_flask_response():
     if last_record:
         print(f"Timestamp: {last_record[0]}")
         print(f"Data (str): {str(last_record[-1])[:100]}")
-        return flask.jsonify({"status": "success", "age": last_record[0], "data": last_record[-1]})
+        return flask.jsonify({"status": "success", "timestamp": last_record[0], "data": last_record[-1]})
     else:
         print("Unable to get a record.")
         return flask.jsonify({"status": "error", "message": "Nothing stored locally, and the Saphi API is down."}), 404
