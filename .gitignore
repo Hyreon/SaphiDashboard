@@ -3,4 +3,4 @@ api_state.db
 .idea
 node_modules
 package-lock.json
-public/dist/*
+dist/*
