@@ -67,15 +67,23 @@ window.addEventListener("gamepaddisconnected", (event) => {
 });
 
 let boundButtonIndex = null;
+
+const rebindButton = document.getElementById("rebind-button");
+
 function bindButton(index) {
-    boundButtonIndex = index;
-    document.getElementById("rebind-button").textContent = 'Rebind';
+  boundButtonIndex = index;
+  rebindButton.textContent = "Rebind";
 }
 
 function unbindButton() {
-    boundButtonIndex = null;
-    document.getElementById("rebind-button").textContent = 'Press a button...';
+  boundButtonIndex = null;
+  previousButtonState = false;
+  rebindButton.textContent = "Press a button...";
+
+  requestAnimationFrame(pollGamepad);
 }
+
+rebindButton.addEventListener("click", unbindButton);
 
 let previousButtonState = false;
 function pollGamepad() {
@@ -285,7 +293,9 @@ targetSelect.addEventListener('change', (event) => {
 
 function targetTypeSelected(value) {
     document.querySelectorAll('.target-detail').forEach(element => {
-        element.hidden = (element.dataset.target !== value)
+        const isHidden = element.dataset.target !== value;
+        element.style.display = isHidden ? 'none' : 'flex';
+        element.hidden = isHidden;
     });
 }
 

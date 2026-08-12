@@ -38,31 +38,36 @@
   </div>
   <div class="overlay-settings" id="settings">
     <div class="header header-settings" id="settings-top">
-      <div>Settings</div>
+      <h2 class="headline">Settings</h2>
     </div>
     <div class="row-setting" id="username-region">
-      <label for="username">Username</label>
-      <input id="username"
-             name="username"
-             type="text"
-             placeholder="BarelyTrying"
-             style="width: 10em">
+      <label for="username" class="form-label">Username</label>
+      <input 
+        id="username"
+        name="username"
+        type="text"
+        class="form-control"
+        placeholder="BarelyTrying"
+      >
     </div>
-<!--    <div class="row-setting" id="timestamp-region">-->
-<!--      <label for="timestamp">Start Time</label>-->
-<!--      <div>-->
-<!--        <button>Now</button>-->
-<!--        <input id="timestamp"-->
-<!--               name="timestamp"-->
-<!--               type="time"-->
-<!--               placeholder="12:00 PM">-->
-<!--        <button>Set</button>-->
-<!--      </div>-->
-<!--    </div>-->
+    <!-- <div class="row-setting" id="timestamp-region">
+      <label for="timestamp">Start Time</label>
+      <div class="paired-fields">
+        <button class="btn btn-sm">Now</button>
+        <input 
+          id="timestamp"
+          name="timestamp"
+          class="form-control field-time-input" 
+          type="time"
+          placeholder="12:00 PM" 
+        >
+        <button class="btn btn-sm">Set</button>
+      </div>
+    </div> -->
     <div class="row-setting" id="target-region">
-      <div>
-        <label for="target">Objective</label>
-        <select name="target" id="target">
+      <div class="field-group">
+        <label for="target" class="form-label">Objective</label>
+        <select name="target" class="form-select" id="target">
           <option value="">Custom</option>
           <option value="standard">Achieve a Standard</option>
           <option value="user">Defeat a Rival</option>
@@ -72,199 +77,258 @@
         </select>
       </div>
       <div class="target-detail" data-target="standard" hidden="hidden">
-        <label for="target-standard">Standard</label>
-        <select name="target-standard" id="target-standard">
+        <label for="target-standard" class="form-label">Standard</label>
+        <select name="target-standard" class="form-select" id="target-standard">
           <option value="-1">Unknown</option>
         </select>
       </div>
       <div class="target-detail" data-target="user" hidden="hidden">
-        <label for="target-user">Rival</label>
+        <label for="target-user" class="form-label">Rival</label>
         <input
-               name="target-user"
-               id="target-user"
-               type="text"
-               placeholder="BarelyTrying">
+          name="target-user"
+          id="target-user"
+          type="text"
+          class="form-control" 
+          placeholder="BarelyTrying"
+        >
       </div>
       <div class="target-detail" data-target="ctr4ever" hidden="hidden">
         <text>*ctr4ever times as of 2026-08-08</text><br>
-        <label for="target-ctr4ever">username</label>
+        <label for="target-ctr4ever" class="form-label">username</label>
         <input
-                name="target-ctr4ever"
-                id="target-ctr4ever"
-                type="text"
-                placeholder="crash68">
+          name="target-ctr4ever"
+          id="target-ctr4ever"
+          type="text"
+          class="form-control"
+          placeholder="crash68"
+        >
       </div>
       <div class="target-detail" data-target="rank" hidden="hidden">
-        <label for="target-rank">Rank</label>
-        <input name="target-rank"
-               id="target-rank"
-               type="number"
-               placeholder=1>
+        <label for="target-rank" class="form-label">Rank</label>
+        <input 
+          id="target-rank"
+          name="target-rank"
+          type="number"
+          class="form-control" 
+          placeholder="1"
+        >
       </div>
       <div class="target-detail" data-target="percentile" hidden="hidden">
-        <label for="target-percentile">Percentile</label>
-        <input name="target-percentile"
-               id="target-percentile"
-               type="number"
-               min="0"
-               max="100"
-               placeholder=100>
+        <label for="target-percentile" label="form-label">Percentile</label>
+        <input 
+          id="target-percentile"
+          name="target-percentile"
+          type="number"
+          min="0"
+          max="100"
+          class="form-control" 
+          placeholder="100"
+        >
       </div>
     </div>
     <div class="row-setting" id="track-region">
-      <div>
-        <label for="track-type">Track Type</label>
-        <select name="track-type" id="track-type">
+      <div class="field-group">
+        <label for="track-type" class="form-label">Track Type</label>
+        <select name="track-type" class="form-select" id="track-type">
           <option value="">All tracks</option>
           <option value="saphi">Saphi</option>
           <option value="community">Community</option>
           <option value="original">Original</option>
         </select>
       </div>
-      <div>
-        <label for="track">track</label>
-        <select name="track" id="track">
+      <div class="field-group">
+        <label for="track" class="form-label">track</label>
+        <select name="track" class="form-select"  id="track">
           <option value="0">None</option>
         </select>
       </div>
-      <div>
-        <label for="category">category</label>
-        <select name="category" id="category">
+      <div class="field-group">
+        <label for="category" class="form-label">category</label>
+        <select name="category" class="form-select" id="category">
           <option value="1">Course</option>
           <option value="2">Lap</option>
         </select>
       </div>
     </div>
     <!-- for sorting categories when we start showing them in a list -->
-<!--    <div class="row-setting" id="category-region">-->
-<!--      <label for="category">Category Sort Order</label>-->
-<!--      <select name="category" id="category">-->
-<!--        <option value="-1">Separate</option>-->
-<!--        <option value="0">Sort by Easier</option>-->
-<!--        <option value="1">Sort by Harder</option>-->
-<!--      </select>-->
-<!--    </div>-->
-<!--    <div class="row-setting" id="sort-by-region">-->
-<!--      <label for="sort-by">Sort By</label>-->
-<!--      <select name="sort-by" id="sort-by">-->
-<!--        <option value="-1">Saphi Order</option>-->
-<!--        <option value="0">User Percentile</option>-->
-<!--        <option value="1">Time Ratio</option>-->
-<!--        <option value="2">Time Difference</option>-->
-<!--      </select>-->
-<!--    </div>-->
-<!--    <div class="row-setting" id="filter-region">-->
-<!--      <label for="filter-engine">Filters</label>-->
-<!--      <select name="filter-engine" id="filter-engine">-->
-<!--        <option value="-1">Any</option>-->
-<!--        <option value="0">Speed</option>-->
-<!--        <option value="1">Balanced</option>-->
-<!--        <option value="2">Acceleration</option>-->
-<!--        <option value="3">Turning</option>-->
-<!--      </select>-->
-<!--      <select name="filter-country" id="filter-country">-->
-<!--        <option value="-1">Any</option>-->
-<!--      </select>-->
-<!--    </div>-->
+    <!-- <div class="row-setting" id="category-region">
+      <label for="category" class="form-label">Category Sort Order</label>
+      <select name="category" class="form-select" id="category">
+        <option value="-1">Separate</option>
+        <option value="0">Sort by Easier</option>
+        <option value="1">Sort by Harder</option>
+      </select>
+    </div>
+    <div class="row-setting" id="sort-by-region">
+      <label for="sort-by" class="form-label">Sort By</label>
+      <select name="sort-by" class="form-select" id="sort-by">
+        <option value="-1">Saphi Order</option>
+        <option value="0">User Percentile</option>
+        <option value="1">Time Ratio</option>
+        <option value="2">Time Difference</option>
+      </select>
+    </div>
+    <div class="row-setting" id="filter-region">
+      <label for="filter-engine" class="form-label">Filters</label>
+      <select name="filter-engine" class="form-select" id="filter-engine">
+        <option value="-1">Any</option>
+        <option value="0">Speed</option>
+        <option value="1">Balanced</option>
+        <option value="2">Acceleration</option>
+        <option value="3">Turning</option>
+      </select>
+      <select name="filter-country" class="form-select" id="filter-country">
+        <option value="-1">Any</option>
+      </select>
+    </div> -->
     <div class="row-setting" id="rebind-region">
-        <label for="rebind-button">Update button</label>
-        <button id="rebind-button" onclick="unbindButton()">Not bound...</button>
-        <label>*Use as Browser Source with OBS to get button presses off screen</label>
+      <label for="rebind-button" class="form-label">Update button</label>
+      <button id="rebind-button" class="btn" onclick="unbindButton()">Not bound...</button>
+      <label class="form-label">*Use as Browser Source with OBS to get button presses off screen</label>
     </div>
     <!-- TODO set whether manual fields are updated automatically with a checkbox -->
     <!-- TODO set whether ties are wins or losses with a dropdown menu -->
     <div class="row-setting">
-      <label for="load-auto">Confirm the above and load</label>
-      <button id="load-auto">Load</button>
+      <label for="load-auto" class="form-label">Confirm the above and load</label>
+      <button id="load-auto" class="btn">Load</button>
     </div>
   </div>
   <div class="overlay-settings" id="manual">
     <div class="header header-settings" id="manual-top">
-      <div>Manual</div>
+      <h2 class="headline">Manual</h2>
     </div>
     <div class="row-setting" id="session-best-set-region">
-      <label for="session-best-set">Session Best</label>
-      <input id="session-best-set"
-             name="session-best"
-             type="text"
-             step="1"
-             style="width: 10em">
+      <div class="field-group">
+        <label for="session-best-set" class="form-label">Session Best</label>
+        <input 
+          id="session-best-set"
+          name="session-best"
+          type="text"
+          step="1"
+          class="form-control"
+        >
+      </div>
     </div>
     <div class="row-setting" id="attempt-set-region">
-      <label for="attempt-set">Attempts</label>
-      <input id="attempt-set"
-             name="attempt"
-             type="number"
-             style="width: 3em"
-             value="0">
+      <div class="field-group">
+        <label for="attempt-set" class="form-label">Attempts</label>
+        <input 
+          id="attempt-set"
+          name="attempt"
+          type="number"
+          class="form-control field-number-input"
+          value="0"
+        >
+      </div>
     </div>
     <div class="row-setting" id="personal-best-set-region">
-      <label for="personal-best-set">Personal Best</label>
-      <input id="personal-best-set"
-             name="personal-best"
-             type="text"
-             style="width: 10em">
+      <div class="field-group">
+        <label for="personal-best-set" class="form-label">Personal Best</label>
+        <input 
+          id="personal-best-set"
+          name="personal-best"
+          type="text"
+          class="form-control"
+        >
+      </div>
     </div>
     <div class="row-setting" id="target-time-set-region">
-      <label for="target-time-set">Target Time</label>
-      <input id="target-time-set"
-             name="target-time"
-             type="text"
-             style="width: 10em">
+      <div class="field-group">
+        <label for="target-time-set" class="form-label">Target Time</label>
+        <input 
+          id="target-time-set"
+          name="target-time"
+          type="text"
+          class="form-control"
+        >
+      </div>
     </div>
     <div class="row-setting" id="factoid-set-region">
-      <label for="factoid-set">Factoid</label>
-      <input id="factoid-set"
-             name="factoid"
-             type="text"
-             style="width: 10em">
+      <div class="field-group">
+        <label for="factoid-set" class="form-label">Factoid</label>
+        <input 
+          id="factoid-set"
+          name="factoid"
+          type="text"
+          class="form-control"
+        >
+      </div>
     </div>
     <div class="row-setting" id="target-label-set-region">
-      <label for="target-label-set">Label</label>
-      <input id="target-label-set"
-             name="target-label-set"
-             type="text"
-             style="width: 10em"
-             value="standard-5">
+      <div class="field-group">
+        <label for="target-label-set" class="form-label">Label</label>
+        <input 
+          id="target-label-set"
+          name="target-label-set"
+          type="text"
+          class="form-control"
+          value="standard-5"
+        >
+      </div>
     </div>
     <div class="row-setting" id="completion-label-set-region">
-      <label for="completion-label-set">Completion Label</label>
-      <input id="completion-label-set"
-             name="completion-label-set"
-             type="text"
-             style="width: 10em"
-             value="Hero Times">
-      <div>
-        <label for="completion-courses-set">Course</label>
-        <input id="completion-courses-set"
-               name="completion-courses-set"
-               type="number"
-               style="width: 3em"
-               value="0">
-        <label for="completion-laps-set">Lap</label>
-        <input id="completion-laps-set"
-               name="completion-laps-set"
-               type="number"
-               style="width: 3em"
-               value="0">
+      <div class="field-group">
+        <label for="completion-label-set" class="form-label">Completion Label</label>
+        <input 
+          id="completion-label-set"
+          name="completion-label-set"
+          type="text"
+          class="form-control"
+          value="Hero Times"
+        >
       </div>
-      <div>
-        <label for="completion-courses-total-set">Total</label>
-        <input id="completion-courses-total-set"
-               name="completion-courses-total-set"
-               type="number"
-               style="width: 3em"
-               value="0">
-        <label for="completion-laps-total-set">Total</label>
-        <input id="completion-laps-total-set"
-               name="completion-laps-total-set"
-               type="number"
-               style="width: 3em"
-               value="0">
+      <div class="paired-fields">
+        <div class="field-group">
+          <label for="completion-courses-set" class="form-label">Course</label>
+          <input 
+            id="completion-courses-set"
+            name="completion-courses-set"
+            type="number"
+            class="form-control field-number-input"
+            min="0"
+            value="0"
+          >
+        </div>
+        <div class="field-group">
+          <label for="completion-courses-total-set" class="form-label">Total</label>
+          <input 
+            id="completion-courses-total-set"
+            name="completion-courses-total-set"
+            type="number"
+            class="form-control field-number-input"
+            min="0"
+            value="0"
+          >
+        </div>
+      </div>
+      <div class="paired-fields">
+        <div class="field-group">
+          <label for="completion-laps-set" class="form-label">Lap</label>
+          <input
+            id="completion-laps-set"
+            name="completion-laps-set"
+            type="number"
+            class="form-control field-number-input"
+            min="0"
+            value="0"
+          >
+        </div>
+
+        <div class="field-group">
+          <label for="completion-laps-total-set" class="form-label">Total</label>
+          <input
+            id="completion-laps-total-set"
+            name="completion-laps-total-set"
+            type="number"
+            class="form-control field-number-input"
+            min="0"
+            value="0"
+          >
+        </div>
       </div>
     </div>
     <div class="row-setting" id="submit-manual-records">
-      <button id="load-manual">Submit</button>
+      <button id="load-manual" class="btn">Submit</button>
     </div>
 
   </div>
