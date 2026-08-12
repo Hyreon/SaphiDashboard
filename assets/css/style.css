@@ -3,48 +3,55 @@
   src: url("../fonts/crash-a-like.ttf") format("truetype");
 }
 
-/* =========================
+/* ========================================
    Design tokens
-   ========================= */
+   ======================================== */
 
 :root {
+  /* Typography */
   --font-display: "Crash-a-Like", -apple-system, sans-serif;
   --font-system: system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --text-primary: #f2f2f0;
-  --text-secondary: #b7b3aa;
-  --text-muted: #6b6f76;
-  --text-muted-light: #b0b2b8;
-  --text-success: #7ed957;
-  --text-warning: #e8b23d;
-  --text-accent: #5e8ef7;
+  /* Text colors */
+  --color-text-primary: #f2f2f0;
+  --color-text-secondary: #b7b3aa;
+  --color-text-muted: #6b6f76;
+  --color-text-muted-light: #b0b2b8;
+  --color-text-success: #7ed957;
+  --color-text-warning: #e8b23d;
+  --color-text-accent: #5e8ef7;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  /* Background colors */
+  --color-overlay: rgb(10 11 13 / 82%);
+  --color-overlay-settings: rgb(50 55 65 / 82%);
+  --color-header-overlay: #1e2132;
+  --color-header-settings: #323741;
+  --color-input-background: #242838;
 
+  /* Borders */
+  --border-subtle: 1px solid rgb(255 255 255 / 12%);
+  --border-input: 1px solid rgb(0 0 0 / 45%);
+  --border-focus: #3a6fc4;
+
+  /* Dimensions */
   --overlay-width: 283px;
   --overlay-radius: 0;
+  --input-radius: 6px;
 
-  --border-subtle: 1px solid rgb(255 255 255 / 12%);
-
-  --input-body-color: #212529;
-  --input-body-bg: #fff;
-  --input-border-width: 1px;
-  --input-border-color: #dee2e6;
-  --input-border-radius: 0.375rem;
-
-  --input-bg-secondary: #242838;
-
-  --radius-sm: 6px;
-
+  /* Effects */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 20%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 25%);
+  --focus-shadow: 0 0 0 0.25rem rgb(58 111 196 / 25%);
   --transition-fast: 150ms ease;
 }
 
-/* =========================
-   Base
-   ========================= */
+/* ========================================
+   Reset and base
+   ======================================== */
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -55,31 +62,55 @@ body {
   background: transparent;
 }
 
+body {
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+}
+
 body.is-loading {
   cursor: progress;
 }
 
-/* =========================
-   Containers
-   ========================= */
+button,
+input,
+select,
+textarea {
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+/* ========================================
+   Main layout
+   ======================================== */
+
+.columns {
+  display: flex;
+  flex-direction: row;
+}
 
 .overlay,
 .overlay-settings {
-  box-sizing: border-box;
-  width: var(--overlay-width);
-  flex: 0 0 var(--overlay-width);
   display: flex;
+  flex: 0 0 var(--overlay-width);
   flex-direction: column;
+
+  width: var(--overlay-width);
   overflow: hidden;
 
   border-radius: var(--overlay-radius);
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-family: var(--font-display);
 }
 
 .overlay {
   height: 800px;
-  background-color: rgb(10 11 13 / 82%);
+  background-color: var(--color-overlay);
   background-image: repeating-linear-gradient(
     45deg,
     transparent 0 20px,
@@ -88,51 +119,48 @@ body.is-loading {
 }
 
 .overlay-settings {
-  height: 650px;
-  background-color: rgb(50 55 65 / 82%);
+  height: 700px;
   overflow-y: auto;
+  background-color: var(--color-overlay-settings);
 }
 
-.columns {
-  display: flex;
-  flex-direction: row;
-}
-
-/* =========================
+/* ========================================
    Headers
-   ========================= */
+   ======================================== */
 
 .header {
   position: relative;
-  flex: 0 0 80px;
 
   display: flex;
+  flex: 0 0 80px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  padding: 6px 10px;
+  
+  min-height: 92px;
   font-size: 48px;
 }
 
 .header-overlay {
-  background-color: #1e2132;
+  background-color: var(--color-header-overlay);
 }
 
 .header-settings {
-  background-color: #323741;
+  background-color: var(--color-header-settings);
 }
 
-/* =========================
-   Layout rows
-   ========================= */
+/* ========================================
+   Rows and sections
+   ======================================== */
 
 .row,
 .footer,
 .row-setting {
   position: relative;
+
   display: flex;
   flex-direction: column;
+
   padding: 6px 10px;
 }
 
@@ -143,12 +171,13 @@ body.is-loading {
 }
 
 .footer {
-  flex: 0 0 240px;
+  flex: 1;
+  min-height: 0;
   align-items: flex-end;
 }
 
 .row-setting {
-  align-items: left;
+  align-items: flex-start;
   justify-content: center;
   gap: 4px;
 }
@@ -157,9 +186,9 @@ body.is-loading {
   border-top: var(--border-subtle);
 }
 
-/* =========================
+/* ========================================
    Labels
-   ========================= */
+   ======================================== */
 
 .eyebrow,
 .eyebrow-sub {
@@ -172,19 +201,19 @@ body.is-loading {
 
 .eyebrow {
   top: 8px;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 24px;
 }
 
 .eyebrow-sub {
   top: 28px;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   font-size: 18px;
 }
 
-/* =========================
+/* ========================================
    Text
-   ========================= */
+   ======================================== */
 
 .main,
 .sub,
@@ -193,14 +222,14 @@ body.is-loading {
 }
 
 .main {
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 36px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .main.tier {
-  color: var(--text-warning);
+  color: var(--color-text-warning);
   font-size: 36px;
   letter-spacing: 0.06em;
 }
@@ -208,7 +237,7 @@ body.is-loading {
 .sub,
 .sub-fancy {
   margin-top: 3px;
-  color: var(--text-muted-light);
+  color: var(--color-text-muted-light);
   font-size: 18px;
   text-align: right;
 }
@@ -218,29 +247,31 @@ body.is-loading {
 }
 
 .placeholder {
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   font-weight: 400;
 }
 
-/* =========================
+/* ========================================
    Iframe
-   ========================= */
+   ======================================== */
 
 .iframe {
   width: 1500px;
   height: 500px;
-  overflow: scroll;
+  overflow: auto;
   border: 1px solid #000;
 }
 
-/* =========================
+/* ========================================
    Standard badges
-   ========================= */
+   ======================================== */
 
 .standard-icon-sprite {
   display: inline-block;
+
   width: 72px;
   height: 25px;
+
   vertical-align: middle;
   background-image: url("../img/standards/standards.webp");
   background-repeat: no-repeat;
@@ -270,132 +301,189 @@ body.is-loading {
   background-position: -144px -25px;
 }
 
-/* =========================
-   Form
-   ========================= */
-
-button, input, select {
-  margin: 0;
-  font-size: inherit;
-  line-height: inherit;
-}
+/* ========================================
+   Form controls
+   ======================================== */
 
 .form-label {
-  color: var(--text-secondary);
-  font-weight: 400;
+  color: var(--color-text-secondary);
   font-size: 16px;
-}
-
-.form-control, .form-select {
-  background-color: var(--input-bg-secondary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid rgba(0, 0, 0, 0.45) !important;
-  border-radius: var(--radius-sm);
-}
-
-.form-control:focus, .form-select:focus {
-  border-color: #3a6fc4 !important;
-  box-shadow: 0 0 0 0.25rem rgba(58, 111, 196, 0.25);
-  outline: 0;
-}
-
-.form-control {
-  display: block;
-  width: 100%;
-  padding: .375rem .75rem;
-  font-size: 14px;
   font-weight: 400;
-  line-height: 1;
-  color: var(--input-body-color);
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-color: var(--input-body-bg);
-  background-clip: padding-box;
-  border: var(--input-border-width) solid var(--input-border-color);
-  border-radius: var(--input-border-radius);
-  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
+.form-control,
 .form-select {
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23b8bcc8' d='m0,1 2,2 2-2'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 12px center !important;
-  background-size: 12px !important;
-}
-
-button, select {
-  text-transform: none;
-}
-
-.form-select {
-  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   display: block;
+
   width: 100%;
-  padding: .375rem 2.25rem .375rem .75rem;
+  padding: 0.375rem 0.75rem;
+
+  color: var(--color-text-primary) !important;
+  font-family: var(--font-system);
   font-size: 14px;
   font-weight: 400;
   line-height: 1.15;
-  color: var(--input-body-color);
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-color: var(--input-body-bg);
+
+  background-color: var(--color-input-background) !important;
   background-clip: padding-box;
-  border: var(--input-border-width) solid var(--input-border-color);
-  border-radius: var(--input-border-radius);
-  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+
+  border: var(--border-input);
+  border-radius: var(--input-radius);
+
+  outline: 0;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
+.form-control {
+  appearance: none;
+}
+
+.form-select {
+  appearance: none;
+
+  padding-right: 2.25rem;
+
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23b8bcc8' d='m0,1 2,2 2-2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--focus-shadow);
+}
+
+/* Text selection inside inputs */
+
+.form-control::selection,
+.form-select::selection {
+  color: var(--color-text-primary);
+  background-color: var(--color-text-accent);
+}
+
+/* Dark browser controls */
+
+.form-control,
+.form-select {
+  color-scheme: dark;
+}
+
+/* ========================================
+   Browser autofill
+   ======================================== */
+
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus,
+.form-control:-webkit-autofill:active,
+.form-select:-webkit-autofill,
+.form-select:-webkit-autofill:hover,
+.form-select:-webkit-autofill:focus,
+.form-select:-webkit-autofill:active {
+  color: var(--color-text-primary) !important;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  caret-color: var(--color-text-primary) !important;
+
+  background-color: var(--color-input-background) !important;
+
+  -webkit-box-shadow:
+    0 0 0 1000px var(--color-input-background) inset !important;
+
+  box-shadow:
+    0 0 0 1000px var(--color-input-background) inset !important;
+
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ========================================
+   Buttons
+   ======================================== */
+
 .btn {
-  background: linear-gradient(135deg, #4a7fd4 0%, #3a6fc4 100%) !important;
-  border: none !important;
-  border-radius: var(--radius-sm);
-  color: var(--text-primary) !important;
-  padding: 12px 24px;
-  min-width: 120px;
-  text-align: center;
-  text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+
+  min-width: 120px;
+  padding: 10px 20px;
+
+  color: var(--color-text-primary) !important;
+  font-family: var(--font-system);
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
+  text-align: center;
+  text-decoration: none;
 
-.btn-sm {
-  padding: 9px 18px;
-  min-width: 60px;
+  background: linear-gradient(
+    135deg,
+    #4a7fd4 0%,
+    #3a6fc4 100%
+  ) !important;
+
+  border: 0 !important;
+  border-radius: var(--input-radius);
+  box-shadow: var(--shadow-sm);
+
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    box-shadow var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .btn:hover {
+  color: var(--color-text-primary) !important;
   filter: brightness(115%);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md), 0 0 10px var(--text-accent) !important;
-  color: var(--text-primary) !important;
+  box-shadow:
+    var(--shadow-md),
+    0 0 10px var(--color-text-accent) !important;
 }
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-text-accent);
+  outline-offset: 2px;
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-sm {
+  min-width: 60px;
+  padding: 9px 18px;
+}
+
+/* ========================================
+   Paired fields
+   ======================================== */
 
 .paired-fields {
   display: flex;
-  gap: 10px;
-  align-items: flex-start;
   flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
 }
 
-.field-group, .target-detail {
+.field-group,
+.target-detail {
   display: flex;
+  min-width: 70px;
   flex-direction: column;
   gap: 4px;
-  min-width: 70px;
 }
 
 .field-number-input {
   width: 100%;
-  max-width: 72px;
+  max-width: 84px;
+  text-align: center;
 }
 
 .field-time-input {
@@ -403,21 +491,22 @@ button, select {
   max-width: 108px;
 }
 
+/* ========================================
+   Headings
+   ======================================== */
+
 h2 {
-  padding: 0;
   margin: 0;
-  font-weight: 400;
+  padding: 0;
+
   font-family: inherit;
   font-size: 48px;
+  font-weight: 400;
+  line-height: 1;
 }
 
 h2.headline {
-  background: linear-gradient(
-    180deg,
-    #b9f4ff 0%,
-    #5ccff5 22%,
-    #1764b6 64%
-  );
+  background: linear-gradient(180deg, #b9f4ff 0%, #5ccff5 22%, #1764b6 64%);
 
   background-clip: text;
   -webkit-background-clip: text;
