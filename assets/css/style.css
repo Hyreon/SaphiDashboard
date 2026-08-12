@@ -1,0 +1,249 @@
+@font-face {
+  font-family: "Crash-a-Like";
+  src: url("../fonts/crash-a-like.ttf") format("truetype");
+}
+
+/* =========================
+   Design tokens
+   ========================= */
+
+:root {
+  --font-display: "Crash-a-Like", -apple-system, sans-serif;
+  --font-system: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-text: #f2f2f0;
+  --color-heading: #fafdf4;
+  --color-muted: #b0b2b8;
+  --color-muted-light: #b0b0b0;
+  --color-placeholder: #6b6f76;
+  --color-tier: #e8b23d;
+
+  --overlay-width: 283px;
+  --overlay-radius: 0;
+
+  --border-subtle: 1px solid rgb(255 255 255 / 12%);
+}
+
+/* =========================
+   Base
+   ========================= */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+body.is-loading {
+  cursor: progress;
+}
+
+/* =========================
+   Containers
+   ========================= */
+
+.overlay,
+.overlay-settings {
+  box-sizing: border-box;
+  width: var(--overlay-width);
+  flex: 0 0 var(--overlay-width);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  border-radius: var(--overlay-radius);
+  color: var(--color-text);
+  font-family: var(--font-display);
+}
+
+.overlay {
+  height: 800px;
+  background-color: rgb(10 11 13 / 82%);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0 20px,
+    rgb(255 255 255 / 2%) 20px 40px
+  );
+}
+
+.overlay-settings {
+  height: 650px;
+  background-color: rgb(50 55 65 / 82%);
+}
+
+.columns {
+  display: flex;
+  flex-direction: row;
+}
+
+/* =========================
+   Headers
+   ========================= */
+
+.header {
+  position: relative;
+  flex: 0 0 80px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 6px 10px;
+  font-size: 48px;
+}
+
+.header-overlay {
+  background-color: #1e2132;
+}
+
+.header-settings {
+  background-color: #323741;
+}
+
+/* =========================
+   Layout rows
+   ========================= */
+
+.row,
+.footer,
+.row-setting {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+}
+
+.row {
+  flex: 0 0 128px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.footer {
+  flex: 0 0 240px;
+  align-items: flex-end;
+}
+
+.row-setting {
+  align-items: center;
+  justify-content: center;
+}
+
+.row + .row {
+  border-top: var(--border-subtle);
+}
+
+/* =========================
+   Labels
+   ========================= */
+
+.eyebrow,
+.eyebrow-sub {
+  position: absolute;
+  left: 10px;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  top: 8px;
+  color: var(--color-heading);
+  font-size: 24px;
+}
+
+.eyebrow-sub {
+  top: 28px;
+  color: var(--color-muted-light);
+  font-size: 18px;
+}
+
+/* =========================
+   Text
+   ========================= */
+
+.main,
+.sub,
+.placeholder {
+  font-family: var(--font-system);
+}
+
+.main {
+  color: var(--color-text);
+  font-size: 36px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.main.tier {
+  color: var(--color-tier);
+  font-size: 36px;
+  letter-spacing: 0.06em;
+}
+
+.sub,
+.sub-fancy {
+  margin-top: 3px;
+  color: var(--color-muted);
+  font-size: 18px;
+  text-align: right;
+}
+
+.sub-fancy {
+  font-family: var(--font-display);
+}
+
+.placeholder {
+  color: var(--color-placeholder);
+  font-weight: 400;
+}
+
+/* =========================
+   Iframe
+   ========================= */
+
+.iframe {
+  width: 1500px;
+  height: 500px;
+  overflow: scroll;
+  border: 1px solid #000;
+}
+
+/* =========================
+   Standard badges
+   ========================= */
+
+.standard-icon-sprite {
+  display: inline-block;
+  width: 72px;
+  height: 25px;
+  vertical-align: middle;
+  background-image: url("../img/standards/standards.webp");
+  background-repeat: no-repeat;
+}
+
+.standard-1 {
+  background-position: -72px 0;
+}
+
+.standard-2 {
+  background-position: -144px 0;
+}
+
+.standard-3 {
+  background-position: -72px -25px;
+}
+
+.standard-4 {
+  background-position: 0 0;
+}
+
+.standard-5 {
+  background-position: 0 -25px;
+}
+
+.standard-6 {
+  background-position: -144px -25px;
+}

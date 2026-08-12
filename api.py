@@ -23,7 +23,7 @@ auth = True
 
 ctr4ever = None
 try:
-    with open("ctr4ever-data.json", "r", encoding="utf-8") as file:
+    with open("data/ctr4ever-data.json", "r", encoding="utf-8") as file:
         ctr4ever = json.load(file)
 except Exception as e:
     print("Something went wrong while loading ctr4ever data file!")

@@ -1,5 +1,5 @@
 /*
- D ROP-IN* NOTES
+ DROP-IN* NOTES
  -------------
  Open this file directly in a browser to preview it, or point an OBS
  Browser Source at it (Properties > Local File, or host it and use
@@ -10,29 +10,43 @@
  script or websocket delivers a new state. Expected shape:
 
  {
- session: { bestTime: "1:12.44", attempts: 14 } | null,
-goal: { time: "1:04.22", type: "BIC" | "WR" | "2nd place" | string } | null,
-pb: "1:12.44" | null,
-factoid: "First attempt on this track: 1:45.90"
-}
+  session: { bestTime: "1:12.44", attempts: 14 } | null,
+  goal: { time: "1:04.22", type: "BIC" | "WR" | "2nd place" | string } | null,
+  pb: "1:12.44" | null,
+  factoid: "First attempt on this track: 1:45.90"
+ }
 
-Seconds-to-goal is NOT passed in -- it's computed here from pb vs
-goal.time. "Achieved" means pb is equal to or faster than goal.time
-(handles the WR / 2nd-place cases too: being ahead of 2nd place is
-the same shape as beating a standard).
+ Seconds-to-goal is NOT passed in -- it's computed here from pb vs
+ goal.time. "Achieved" means pb is equal to or faster than goal.time
+ (handles the WR / 2nd-place cases too: being ahead of 2nd place is
+ the same shape as beating a standard).
 
-Example websocket wiring:
-const ws = new WebSocket("ws://localhost:8080");
-ws.onmessage = (e) => render(JSON.parse(e.data));
+ Example websocket wiring:
+ const ws = new WebSocket("ws://localhost:8080");
+ ws.onmessage = (e) => render(JSON.parse(e.data));
 
-Example polling wiring:
-setInterval(async () => {
-const data = await (await fetch("/state.json")).json();
-render(data);
-}, 1000);
+ Example polling wiring:
+ setInterval(async () => {
+ const data = await (await fetch("/state.json")).json();
+ render(data);
+ }, 1000);
 
-Delete the demo cycle at the bottom once real data is wired in.
+ Delete the demo cycle at the bottom once real data is wired in.
 */
+
+import { init as initVoronoi } from '@hyreon/voronoi';
+import { init as initAiBadge } from '@hyreon/ai-badge';
+
+initVoronoi([
+    [15,60,90],
+    [10,15,35],
+    [20,80,100],
+    [12,12,30],
+    [10,50,75],
+    [15,18,40],
+    [25,70,85]
+]);
+initAiBadge();
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -77,7 +91,7 @@ function pollGamepad() {
 
         previousButtonState = currentState;
     } else if (boundButtonIndex === null) {
-        pressedButtonIndex = gp.buttons.findIndex((button) => button.pressed)
+        let pressedButtonIndex = gp.buttons.findIndex((button) => button.pressed);
         if (pressedButtonIndex !== -1) {
             bindButton(pressedButtonIndex);
         }
@@ -510,7 +524,6 @@ async function autoRender() {
 }
 
 async function apiAction(json) {
-
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
