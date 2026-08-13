@@ -1,6 +1,6 @@
 # Saphi Dashboard
 
-Created by Hyreon, hosted on www.hyreon.top/saphi/
+Created by Hyreon and TheKoji, hosted on www.hyreon.top/saphi/
 
 The Saphi dashboard allows you to...
 - View your times
@@ -28,11 +28,11 @@ You can use OBS to make sure it counts, even when not displayed.
 
 ## Supporting the project
 The best way to support the project (and Saphi in general) is to use it while streaming!
-I'm not very good at the whole "letting people know you exist" side of development, so any public use of the dashboard is appreciated.
+Public use of the dashboard will let people know that it exists, see how it can be useful, and help both of us as developers.
 
-Giving clear feedback about what's bugs and features is also incredibly valuable, so it remains useful for you and others.
+Giving clear feedback about bugs and features is also incredibly valuable, so it remains useful for you and others.
 Known issues and feature requests are tracked [here](https://github.com/Hyreon/SaphiDashboard/issues?q=is%3Aissue%20state%3Aopen%20sort%3Areactions-desc). You can cast your vote for features by reacting positively, report new issues, or comment on existing ones.
 
 ## Thank you! :heart:
 
-You can visit my other projects at www.hyreon.top/, including my game [Little Blue](https://store.steampowered.com/app/3259230/Little_Blue/) on Steam.
+You can visit Hyreon's other projects at www.hyreon.top/, including his game [Little Blue](https://store.steampowered.com/app/3259230/Little_Blue/) on Steam.
