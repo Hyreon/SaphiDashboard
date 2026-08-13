@@ -36,6 +36,7 @@
 
 import { init as initVoronoi } from '@hyreon/voronoi';
 import { init as initAiBadge } from '@hyreon/ai-badge';
+import { isValidTime, parseTime, formatTimeMask } from './utils';
 
 initVoronoi([
     [15,60,90],
@@ -112,19 +113,6 @@ function incrementAttempt() {
     const attemptEl = document.getElementById('attempt-set');
     attemptEl.value = parseInt(attemptEl.value || '0') + 1;
     manualRender(); // or whatever re-renders after a manual field change
-}
-
-function parseTime(str) {
-    const parts = str.split(':');
-    let minutes = 0;
-    let seconds = 0;
-    if (parts.length > 1) {
-        minutes = parseInt(parts[0]);
-        seconds = parseFloat(parts[1]);
-    } else {
-        seconds = parseFloat(parts[0]);
-    }
-    return minutes * 60 + seconds;
 }
 
 function getRankString(num) {
@@ -249,6 +237,8 @@ function manualRender() {
     let attempts = document.getElementById('attempt-set').value;
 
     let goalTime = document.getElementById('target-time-set').value;
+    
+    let pbTime = document.getElementById('personal-best-set').value;
 
     let factoid = document.getElementById('factoid-set').value;
 
@@ -256,15 +246,17 @@ function manualRender() {
 
     if (sessionBest) {
         data.session = {
-            bestTime: sessionBest,
+            bestTime: isValidTime(sessionBest) ? sessionBest : null,
             attempts: attempts,
         }
     }
+
     data.goal = {
-        time: goalTime,
+        time: isValidTime(goalTime) ? goalTime : null,
         type: targetLabel
     };
-    data.pb = document.getElementById('personal-best-set').value;
+
+    data.pb = isValidTime(pbTime) ? pbTime : null;
 
     if (factoid) {
         data.factoid = factoid;
@@ -694,6 +686,14 @@ persistedFields.forEach(id => {
     if (el) {
         el.addEventListener('change', saveFieldValues);
     }
+});
+
+document.querySelectorAll("#session-best-set, #personal-best-set, #target-time-set").forEach(el => {
+    el.maxLength = 7;
+    el.onkeydown = (e) => {
+        const nextMasked = formatTimeMask(e.target.value);
+        el.value = nextMasked;
+    };
 });
 
 Promise.allSettled([loadTracks(), loadStandards(), loadPlayers()])
