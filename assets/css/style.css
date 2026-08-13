@@ -474,10 +474,17 @@ select {
 
 .field-group,
 .target-detail {
-  display: flex;
   min-width: 70px;
   flex-direction: column;
   gap: 4px;
+}
+
+.field-group {
+  display: flex;
+}
+
+.target-detail {
+  display: none;
 }
 
 .field-number-input {
