@@ -1,5 +1,5 @@
 /*
- D ROP-IN* NOTES
+ DROP-IN* NOTES
  -------------
  Open this file directly in a browser to preview it, or point an OBS
  Browser Source at it (Properties > Local File, or host it and use
@@ -10,29 +10,44 @@
  script or websocket delivers a new state. Expected shape:
 
  {
- session: { bestTime: "1:12.44", attempts: 14 } | null,
-goal: { time: "1:04.22", type: "BIC" | "WR" | "2nd place" | string } | null,
-pb: "1:12.44" | null,
-factoid: "First attempt on this track: 1:45.90"
-}
+  session: { bestTime: "1:12.44", attempts: 14 } | null,
+  goal: { time: "1:04.22", type: "BIC" | "WR" | "2nd place" | string } | null,
+  pb: "1:12.44" | null,
+  factoid: "First attempt on this track: 1:45.90"
+ }
 
-Seconds-to-goal is NOT passed in -- it's computed here from pb vs
-goal.time. "Achieved" means pb is equal to or faster than goal.time
-(handles the WR / 2nd-place cases too: being ahead of 2nd place is
-the same shape as beating a standard).
+ Seconds-to-goal is NOT passed in -- it's computed here from pb vs
+ goal.time. "Achieved" means pb is equal to or faster than goal.time
+ (handles the WR / 2nd-place cases too: being ahead of 2nd place is
+ the same shape as beating a standard).
 
-Example websocket wiring:
-const ws = new WebSocket("ws://localhost:8080");
-ws.onmessage = (e) => render(JSON.parse(e.data));
+ Example websocket wiring:
+ const ws = new WebSocket("ws://localhost:8080");
+ ws.onmessage = (e) => render(JSON.parse(e.data));
 
-Example polling wiring:
-setInterval(async () => {
-const data = await (await fetch("/state.json")).json();
-render(data);
-}, 1000);
+ Example polling wiring:
+ setInterval(async () => {
+ const data = await (await fetch("/state.json")).json();
+ render(data);
+ }, 1000);
 
-Delete the demo cycle at the bottom once real data is wired in.
+ Delete the demo cycle at the bottom once real data is wired in.
 */
+
+import { init as initVoronoi } from '@hyreon/voronoi';
+import { init as initAiBadge } from '@hyreon/ai-badge';
+import { isValidTime, parseTime, formatTimeMask } from './utils';
+
+initVoronoi([
+    [15,60,90],
+    [10,15,35],
+    [20,80,100],
+    [12,12,30],
+    [10,50,75],
+    [15,18,40],
+    [25,70,85]
+]);
+initAiBadge();
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -53,15 +68,23 @@ window.addEventListener("gamepaddisconnected", (event) => {
 });
 
 let boundButtonIndex = null;
+
+const rebindButton = document.getElementById("rebind-button");
+
 function bindButton(index) {
-    boundButtonIndex = index;
-    document.getElementById("rebind-button").textContent = 'Rebind';
+  boundButtonIndex = index;
+  rebindButton.textContent = "Rebind";
 }
 
 function unbindButton() {
-    boundButtonIndex = null;
-    document.getElementById("rebind-button").textContent = 'Press a button...';
+  boundButtonIndex = null;
+  previousButtonState = false;
+  rebindButton.textContent = "Press a button...";
+
+  requestAnimationFrame(pollGamepad);
 }
+
+rebindButton.addEventListener("click", unbindButton);
 
 let previousButtonState = false;
 function pollGamepad() {
@@ -77,7 +100,7 @@ function pollGamepad() {
 
         previousButtonState = currentState;
     } else if (boundButtonIndex === null) {
-        pressedButtonIndex = gp.buttons.findIndex((button) => button.pressed)
+        let pressedButtonIndex = gp.buttons.findIndex((button) => button.pressed);
         if (pressedButtonIndex !== -1) {
             bindButton(pressedButtonIndex);
         }
@@ -90,19 +113,6 @@ function incrementAttempt() {
     const attemptEl = document.getElementById('attempt-set');
     attemptEl.value = parseInt(attemptEl.value || '0') + 1;
     manualRender(); // or whatever re-renders after a manual field change
-}
-
-function parseTime(str) {
-    const parts = str.split(':');
-    let minutes = 0;
-    let seconds = 0;
-    if (parts.length > 1) {
-        minutes = parseInt(parts[0]);
-        seconds = parseFloat(parts[1]);
-    } else {
-        seconds = parseFloat(parts[0]);
-    }
-    return minutes * 60 + seconds;
 }
 
 function getRankString(num) {
@@ -227,6 +237,8 @@ function manualRender() {
     let attempts = document.getElementById('attempt-set').value;
 
     let goalTime = document.getElementById('target-time-set').value;
+    
+    let pbTime = document.getElementById('personal-best-set').value;
 
     let factoid = document.getElementById('factoid-set').value;
 
@@ -234,15 +246,17 @@ function manualRender() {
 
     if (sessionBest) {
         data.session = {
-            bestTime: sessionBest,
+            bestTime: isValidTime(sessionBest) ? sessionBest : null,
             attempts: attempts,
         }
     }
+
     data.goal = {
-        time: goalTime,
+        time: isValidTime(goalTime) ? goalTime : null,
         type: targetLabel
     };
-    data.pb = document.getElementById('personal-best-set').value;
+
+    data.pb = isValidTime(pbTime) ? pbTime : null;
 
     if (factoid) {
         data.factoid = factoid;
@@ -271,7 +285,9 @@ targetSelect.addEventListener('change', (event) => {
 
 function targetTypeSelected(value) {
     document.querySelectorAll('.target-detail').forEach(element => {
-        element.hidden = (element.dataset.target !== value)
+        const isHidden = element.dataset.target !== value;
+        element.style.display = isHidden ? 'none' : 'flex';
+        element.hidden = isHidden;
     });
 }
 
@@ -510,7 +526,6 @@ async function autoRender() {
 }
 
 async function apiAction(json) {
-
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -671,6 +686,14 @@ persistedFields.forEach(id => {
     if (el) {
         el.addEventListener('change', saveFieldValues);
     }
+});
+
+document.querySelectorAll("#session-best-set, #personal-best-set, #target-time-set").forEach(el => {
+    el.maxLength = 7;
+    el.onkeydown = (e) => {
+        const nextMasked = formatTimeMask(e.target.value);
+        el.value = nextMasked;
+    };
 });
 
 Promise.allSettled([loadTracks(), loadStandards(), loadPlayers()])
