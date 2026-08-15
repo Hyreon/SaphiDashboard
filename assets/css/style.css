@@ -97,7 +97,7 @@ select {
 .overlay,
 .overlay-settings {
   display: flex;
-  flex: 0 0 var(--overlay-width);
+  flex: 0 0 auto;
   flex-direction: column;
 
   width: var(--overlay-width);
@@ -109,13 +109,16 @@ select {
 }
 
 .overlay {
-  height: 800px;
+  height: 530px;
   background-color: var(--color-overlay);
   background-image: repeating-linear-gradient(
     45deg,
     transparent 0 20px,
     rgb(255 255 255 / 2%) 20px 40px
   );
+
+  resize: both;
+  overflow: auto;
 }
 
 .overlay-settings {
