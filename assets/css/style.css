@@ -119,7 +119,7 @@ select {
 }
 
 .overlay-settings {
-  height: 700px;
+  height: 720px;
   overflow-y: auto;
   background-color: var(--color-overlay-settings);
 }
