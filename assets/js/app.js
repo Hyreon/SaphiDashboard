@@ -1,42 +1,12 @@
-/*
- DROP-IN* NOTES
- -------------
- Open this file directly in a browser to preview it, or point an OBS
- Browser Source at it (Properties > Local File, or host it and use
- the URL). The page background is transparent outside the panel, so
- it composites cleanly over gameplay capture.
-
- To wire in real data, call render(data) whenever your polling
- script or websocket delivers a new state. Expected shape:
-
- {
-  session: { bestTime: "1:12.44", attempts: 14 } | null,
-  goal: { time: "1:04.22", type: "BIC" | "WR" | "2nd place" | string } | null,
-  pb: "1:12.44" | null,
-  factoid: "First attempt on this track: 1:45.90"
- }
-
- Seconds-to-goal is NOT passed in -- it's computed here from pb vs
- goal.time. "Achieved" means pb is equal to or faster than goal.time
- (handles the WR / 2nd-place cases too: being ahead of 2nd place is
- the same shape as beating a standard).
-
- Example websocket wiring:
- const ws = new WebSocket("ws://localhost:8080");
- ws.onmessage = (e) => render(JSON.parse(e.data));
-
- Example polling wiring:
- setInterval(async () => {
- const data = await (await fetch("/state.json")).json();
- render(data);
- }, 1000);
-
- Delete the demo cycle at the bottom once real data is wired in.
-*/
+//Created by Hyreon and TheKoji
 
 import { init as initVoronoi } from '@hyreon/voronoi';
 import { init as initAiBadge } from '@hyreon/ai-badge';
 import { isValidTime, parseTime, formatTimeMask } from './utils';
+import { Model, Target } from './model'; //Handles API calls; app has no awareness of these
+import { init as initGamepadHooks } from './gamepad';
+
+let model = new Model();
 
 initVoronoi([
     [15,60,90],
@@ -48,72 +18,7 @@ initVoronoi([
     [25,70,85]
 ]);
 initAiBadge();
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-let tracks = [];
-let players = [];
-let standards = [];
-let ctr4ever = {}; //ctr4ever records
-let records = {}; //cache of records, currently unused
-let track_priorities = {}; //includes a difference and a tier, which can independently be used to determine priority
-
-window.addEventListener("gamepadconnected", (event) => {
-    console.log("Gamepad connected:", event.gamepad.id);
-    pollGamepad()
-});
-
-window.addEventListener("gamepaddisconnected", (event) => {
-    console.log("Gamepad disconnected:", event.gamepad.id);
-});
-
-let boundButtonIndex = null;
-
-const rebindButton = document.getElementById("rebind-button");
-
-function bindButton(index) {
-  boundButtonIndex = index;
-  rebindButton.textContent = "Rebind";
-}
-
-function unbindButton() {
-  boundButtonIndex = null;
-  previousButtonState = false;
-  rebindButton.textContent = "Press a button...";
-
-  requestAnimationFrame(pollGamepad);
-}
-
-rebindButton.addEventListener("click", unbindButton);
-
-let previousButtonState = false;
-function pollGamepad() {
-    const gamepads = navigator.getGamepads();
-    const gp = gamepads[0]; // adjust if you support multiple controllers
-
-    if (gp && boundButtonIndex !== null) {
-        const currentState = gp.buttons[boundButtonIndex].pressed;
-
-        if (currentState && !previousButtonState) {
-            incrementAttempt();
-        }
-
-        previousButtonState = currentState;
-    } else if (boundButtonIndex === null) {
-        let pressedButtonIndex = gp.buttons.findIndex((button) => button.pressed);
-        if (pressedButtonIndex !== -1) {
-            bindButton(pressedButtonIndex);
-        }
-    }
-
-    requestAnimationFrame(pollGamepad);
-}
-
-function incrementAttempt() {
-    const attemptEl = document.getElementById('attempt-set');
-    attemptEl.value = parseInt(attemptEl.value || '0') + 1;
-    manualRender(); // or whatever re-renders after a manual field change
-}
+initGamepadHooks(manualRender);
 
 function getRankString(num) {
     const absNum = Math.abs(Math.trunc(num));
@@ -275,7 +180,7 @@ function manualRender() {
 
 const trackTypeSelect = document.getElementById('track-type');
 trackTypeSelect.addEventListener('change', () => {
-    loadTracks()
+    reloadTracks();
 })
 
 const targetSelect = document.getElementById('target');
@@ -303,120 +208,6 @@ function getCategory() {
     return parseInt(document.getElementById('category').value);
 }
 
-const asTargetId = (type) => `target-${type}`;
-const asStandard = (type) => `standard-${type}`;
-
-class Target {
-    constructor() {
-        this.type = document.getElementById('target').value;
-        if (this.type) {
-            this.value = document.getElementById(asTargetId(this.type)).value;
-        }
-        this.entry = null;
-    }
-
-    updateEntry(entries, context) {
-        if (this.type === '') {
-            return null;
-        }
-        if (this.type === 'user') {
-            return entries.find(entry => entry.name === this.value);
-        }
-        if (this.type === 'rank') {
-            return entries.find(entry => entry.rank === parseInt(this.value));
-        }
-        if (this.type === 'percentile') {
-            const candidates = entries
-            .filter(entry => entry.percentile >= parseInt(this.value))  // must be at least the target percentile
-
-            return candidates.length > 0
-            ? candidates.reduce((a, b) => a.percentile < b.percentile ? a : b)  // get the lowest percentile
-            : null;  // if there are no submissions, return none
-        }
-        if (this.type === 'standard') {
-            const syntheticEntry = {
-                time_formatted: '0:00.00',
-                name: asStandard(this.value)
-            }
-            if (context.track_id) {
-                const track = tracks.find(track => track.id === context.track_id);
-                const match = track?.standards
-                .filter(standard => standard.category_id === context.category_id)
-                .find(standard => standard.tier_id === parseInt(this.value))
-                if (match) syntheticEntry.time_formatted = match.time_formatted;
-            }
-            return syntheticEntry;
-        }
-        if (this.type === 'ctr4ever') {
-            return ctr4ever[context.track_id][context.category_id].find(entry => entry.name === this.value);
-        }
-        if (this.type === 'user') {
-            return entries.find(entry => entry.name === this.value);
-        }
-    }
-
-    async totals(username, ties_are_wins=false) {
-
-        if (this.type === '') {
-            return null;
-        }
-
-        if (this.type === 'user') {
-            //return the simple matchup preview
-            return await apiAction({
-                method: 'POST',
-                body: JSON.stringify({
-                    endpoint: 'matchups',
-                    paginate: true,
-                    max_age: 3600,
-                    params: {
-                        player1_id: players.find(player => player.name === username)["id"],
-                                     player2_id: players.find(player => player.name === this.value)["id"]
-                    }
-                })
-            })
-            .then((json) => {
-                let data = json["data"][0];
-                const courses = data.comparisons.filter(c => c["category_id"] === 1);
-                const laps = data.comparisons.filter(c => c["category_id"] === 2);
-                const courses_won = courses.filter(c => c["winner"] === 1);
-                const laps_won = laps.filter(c => c["winner"] === 1);
-                console.log(courses, laps);
-                return {
-                    courses_won: courses_won.length,
-                    courses_total: courses.length,
-                    laps_won: laps_won.length,
-                    laps_total: laps.length,
-                    label: `vs ${this.value}`
-                }
-            })
-        }
-
-        if (this.type === 'rank') {
-
-        }
-
-        if (this.type === 'standard') {
-
-        }
-
-        if (this.type === 'percentile') {
-
-        }
-
-        return null;
-
-    }
-
-    label(match) {
-        if (match) {
-            return match.name;
-        } else {
-            return 'Target';
-        }
-    }
-}
-
 const loadButton = document.getElementById('load-auto');
 loadButton.addEventListener('click', () => {
     autoRender()
@@ -427,139 +218,73 @@ loadManualButton.addEventListener('click', () => {
     manualRender()
 });
 
+const asTargetId = (type) => `target-${type}`;
+
 async function autoRender() {
 
     const username = getUser();
     const track_id = getTrack();
     const category_id = getCategory();
-    const target = new Target();
 
-    document.body.classList.add('is-loading');
 
-    try {
-        await apiAction({
-            body: JSON.stringify({
-                endpoint: 'leaderboards',
-                paginate: true,
-                max_age: 3600,
-                params: {
-                    track_id: track_id,
-                    category_id: category_id
-                }
-            })
-        })
-        .then(async data => {
-            if (target.type === 'ctr4ever') {
-                await apiAction({
-                    body: JSON.stringify({
-                        endpoint: 'ctr4ever',
-                        params: {
-                            track: tracks.find(track => track['id'] === track_id)['name'],
-                                         category: category_id === 1 ? 'course' : 'lap'
-                        }
-                    })
-                })
-                .then(async data => {
-                    ctr4ever[track_id] ||= {};
-                    ctr4ever[track_id][category_id] = data["data"];
-                })
-            }
-            return data;
-        })
-        .then(async data => {
-            let entries = data["data"];
-
-            const target_time_el = document.getElementById('target-time-set');
-            const best_time_el = document.getElementById('personal-best-set');
-            const target_label_el = document.getElementById('target-label-set');
-
-            const pb_match = entries.find(entry => entry.name === username);
-            if (pb_match) {
-                //set the manual field as a side effect
-                best_time_el.value = pb_match.time_formatted
-            }
-
-            const target_match = target.updateEntry(entries, {
-                username: username,
-                track_id: track_id,
-                category_id: category_id
-            });
-            if (target_match) {
-                //set the manual field as a side effect
-                target_time_el.value = target_match.time_formatted
-            }
-
-            const pb_time = (pb_match ? pb_match.time_formatted : null);
-            const target_time = (target_match ? target_match.time_formatted : null);
-
-            const target_label = target.label(target_match);
-            target_label_el.value = target_label;
-
-            const target_totals = null;
-            //TODO
-            //  store the relative difficulty of each goal track (at least by time away for now)
-            //  and then fill in those values from each fields' intended logic
-
-            // const target_totals = await target.totals(username);
-            // if (target_totals) {
-            //   //set the manual field as a side effect
-            //   document.getElementById('completion-courses-set').value = target_totals.courses_won;
-            //   document.getElementById('completion-laps-set').value = target_totals.laps_won;
-            //   document.getElementById('completion-courses-total-set').value = target_totals.courses_total;
-            //   document.getElementById('completion-laps-total-set').value = target_totals.laps_total;
-            //   document.getElementById('completion-label-set').value = target_totals.label;
-            // }
-
-            render({
-                session: null,
-                goal: {time: target_time, type: target_label},
-                pb: pb_time,
-                factoid: 'auto-generated',
-                totals: target_totals
-            });
-        });
-    } catch (e) {
-        console.error(e);
-    } finally {
-        document.body.classList.remove('is-loading');  // reverts to default/inherited behavior
+    let targetType = document.getElementById('target').value;
+    let targetValue = undefined;
+    if (targetType) {
+        targetValue = document.getElementById(asTargetId(targetType)).value;
     }
-}
 
-async function apiAction(json) {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
+    const target = new Target(targetType, targetValue);
 
-    return await fetch(API_URL + "/webhook", {
-        ...json,
-        headers: myHeaders,
-        method: 'POST'
-    })
-    .then(r => r.json())
-}
+    let entries = await model.loadLeaderboard(track_id, category_id, target);
 
-async function loadStandards() {
+    const target_time_el = document.getElementById('target-time-set');
+    const best_time_el = document.getElementById('personal-best-set');
+    const target_label_el = document.getElementById('target-label-set');
 
-    return await apiAction({
-        body: JSON.stringify({
-            endpoint: 'standards',
-            paginate: true,
-            max_age: 3600
-        })
-    })
-    .then(data => {
-        standards = data["data"].reverse();
+    const pb_match = entries.find(entry => entry.name === username);
+    if (pb_match) {
+        //set the manual field as a side effect
+        best_time_el.value = pb_match.time_formatted
+    }
 
-        const select = document.getElementById('target-standard');
-
-        select.innerHTML = '';
-
-        standards.forEach(standard => {
-            if (standard.include_in_average) {
-                select.add(new Option(standard.name, standard.id));
-            }
-        });
+    const target_match = target.updateEntry(entries, {
+        username: username,
+        track_id: track_id,
+        category_id: category_id
     });
+    if (target_match) {
+        //set the manual field as a side effect
+        target_time_el.value = target_match.time_formatted
+    }
 
+    const pb_time = (pb_match ? pb_match.time_formatted : null);
+    const target_time = (target_match ? target_match.time_formatted : null);
+
+    const target_label = target.label(target_match);
+    target_label_el.value = target_label;
+
+    const target_totals = null;
+    //TODO
+    //  store the relative difficulty of each goal track (at least by time away for now)
+    //  and then fill in those values from each fields' intended logic
+
+    // const target_totals = await target.totals(username);
+    // if (target_totals) {
+    //   //set the manual field as a side effect
+    //   document.getElementById('completion-courses-set').value = target_totals.courses_won;
+    //   document.getElementById('completion-laps-set').value = target_totals.laps_won;
+    //   document.getElementById('completion-courses-total-set').value = target_totals.courses_total;
+    //   document.getElementById('completion-laps-total-set').value = target_totals.laps_total;
+    //   document.getElementById('completion-label-set').value = target_totals.label;
+    // }
+
+    render({
+        session: null,
+        goal: {time: target_time, type: target_label},
+        pb: pb_time,
+        factoid: 'auto-generated',
+        totals: target_totals
+    });
 }
 
 function matches_track_type_filter(track_type) {
@@ -568,66 +293,6 @@ function matches_track_type_filter(track_type) {
         return track_type === track_type_filter;
     }
     return true;
-}
-
-async function loadPlayers() {
-
-    return await apiAction({
-        body: JSON.stringify({
-            endpoint: 'players',
-            paginate: true,
-            max_age: 3600,
-        })
-    })
-    .then(data => {
-        players = data["data"];
-
-        //internal use; no fields are affected
-    })
-}
-
-async function loadTracks() {
-
-    return await apiAction({
-        body: JSON.stringify({
-            endpoint: 'tracks',
-            paginate: true,
-            max_age: 3600,
-            params: {
-                include_downloads: false
-            }
-        })
-    })
-    .then(data => {
-        tracks = data["data"]
-        .filter(track => matches_track_type_filter(track.track_type));
-
-        const select = document.getElementById('track');
-
-        select.innerHTML = '<option value="0">None</option>';
-
-        tracks.forEach(track => {
-            select.add(new Option(track.name, track.id));
-        })
-    })
-    .then(_ => { //new set of tracks means we need to update whether ctr4ever targets are visible
-        let target = document.getElementById('target');
-        let options = [...target.options];
-        if (trackTypeSelect.value === 'original') {
-            options.find(option => option.value === 'ctr4ever').disabled = false;
-        } else {
-            options.find(option => option.value === 'ctr4ever').disabled = true;
-            if (target.selectedOptions[0]?.disabled) {
-                const firstEnabledOption = Array.from(target.options)
-                .find(option => !option.disabled);
-                if (firstEnabledOption) {
-                    target.value = firstEnabledOption.value;
-
-                    target.dispatchEvent(new Event('change'));
-                }
-            }
-        }
-    })
 }
 
 let delayedQueue = [];
@@ -696,7 +361,66 @@ document.querySelectorAll("#session-best-set, #personal-best-set, #target-time-s
     };
 });
 
-Promise.allSettled([loadTracks(), loadStandards(), loadPlayers()])
+async function reloadTracks() {
+    await model.loadTracks()
+        .then(_ => {
+            let trackList = model.tracks.filter(track => matches_track_type_filter(track.track_type));
+
+            const select = document.getElementById('track');
+
+            select.innerHTML = '<option value="0">None</option>';
+
+            trackList.forEach(track => {
+                select.add(new Option(track.name, track.id));
+            })
+        })
+        .then(_ => { //new set of tracks means we need to update whether ctr4ever targets are visible
+            let target = document.getElementById('target');
+            let options = [...target.options];
+            let disables = false;
+
+            if (trackTypeSelect.value === 'original') {
+                options.find(option => option.value === 'ctr4ever').disabled = false;
+            } else {
+                options.find(option => option.value === 'ctr4ever').disabled = true;
+                disables = true;
+            }
+
+            if (trackTypeSelect.value === 'community') {
+                options.find(option => option.value === 'standard').disabled = true;
+                disables = true;
+            } else {
+                options.find(option => option.value === 'standard').disabled = false;
+            }
+
+            if (disables) {
+                if (target.selectedOptions[0]?.disabled) {
+                    const firstEnabledOption = Array.from(target.options)
+                        .find(option => !option.disabled);
+                    if (firstEnabledOption) {
+                        target.value = firstEnabledOption.value;
+
+                        target.dispatchEvent(new Event('change'));
+                    }
+                }
+            }
+        })
+}
+
+async function reloadStandards() {
+    await model.loadStandards();
+    const select = document.getElementById('target-standard');
+
+    select.innerHTML = '';
+
+    model.standards.forEach(standard => {
+        if (standard.include_in_average) {
+            select.add(new Option(standard.name, standard.id));
+        }
+    });
+}
+
+Promise.allSettled([reloadTracks(), reloadStandards(), model.loadPlayers()])
 .then(results => {
     const failures = results.filter(r => r.status === 'rejected');
     if (failures.length > 0) {
