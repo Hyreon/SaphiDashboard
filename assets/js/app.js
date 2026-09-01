@@ -2,7 +2,7 @@
 
 import { init as initVoronoi } from '@hyreon/voronoi';
 import { init as initAiBadge } from '@hyreon/ai-badge';
-import { isValidTime, parseTime, formatTimeMask } from './utils';
+import {isValidTime, parseTime, formatTimeMask, getRankString} from './utils';
 import { Model, Target } from './model'; //Handles API calls; app has no awareness of these
 import { init as initGamepadHooks } from './gamepad';
 
@@ -19,26 +19,6 @@ initVoronoi([
 ]);
 initAiBadge();
 initGamepadHooks(manualRender);
-
-function getRankString(num) {
-    const absNum = Math.abs(Math.trunc(num));
-    const lastTwo = absNum % 100;
-
-    if (lastTwo >= 11 && lastTwo <= 13) {
-        return `${num}th`;
-    }
-
-    switch (absNum % 10) {
-        case 1:
-            return `${num}st`;
-        case 2:
-            return `${num}nd`;
-        case 3:
-            return `${num}rd`;
-        default:
-            return `${num}th`;
-    }
-}
 
 function render(data) {
     var sessionMain = document.getElementById('session-main');
@@ -233,9 +213,11 @@ async function autoRender() {
         targetValue = document.getElementById(asTargetId(targetType)).value;
     }
 
-    const target = new Target(targetType, targetValue);
+    const target = new Target(targetType, targetValue, model);
 
     let entries = await model.loadLeaderboard(track_id, category_id, target);
+
+    console.log(entries);
 
     const target_time_el = document.getElementById('target-time-set');
     const best_time_el = document.getElementById('personal-best-set');
@@ -247,7 +229,7 @@ async function autoRender() {
         best_time_el.value = pb_match.time_formatted
     }
 
-    const target_match = target.updateEntry(entries, {
+    const target_match = target.getMatchingEntry(entries, {
         username: username,
         track_id: track_id,
         category_id: category_id

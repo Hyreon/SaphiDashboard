@@ -36,3 +36,23 @@ export function formatTimeMask(raw) {
     
     return value;
 }
+
+export function getRankString(num) {
+    const absNum = Math.abs(Math.trunc(num));
+    const lastTwo = absNum % 100;
+
+    if (lastTwo >= 11 && lastTwo <= 13) {
+        return `${num}th`;
+    }
+
+    switch (absNum % 10) {
+        case 1:
+            return `${num}st`;
+        case 2:
+            return `${num}nd`;
+        case 3:
+            return `${num}rd`;
+        default:
+            return `${num}th`;
+    }
+}

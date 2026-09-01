@@ -1,4 +1,4 @@
-//Model has no awareness of HTML elements
+//Model has no awareness of HTML elements (with an exception for throbbers; I accept this for now)
 //TODO target should have a function or parameter with acccess to 'model'
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -10,8 +10,8 @@ export class Model {
         this.players = [];
         this.standards = [];
         this.ctr4ever = {}; //ctr4ever records
-        this.leaderboards = {}; //cache of records, currently unused
-        this.track_priorities = {}; //includes a difference and a tier, which can independently be used to determine priority
+        this.leaderboards = {}; //cache of records; currently unused
+        this.track_priorities = {}; //includes a difference and a tier, which can independently be used to determine priority; currently unused
     }
 
     //do the things
@@ -47,7 +47,7 @@ export class Model {
         }).then(async data => {
             this.leaderboards[track_id] ||= {};
             this.leaderboards[track_id][category_id] = data["data"];
-            return this.leaderboards[track_id][category_id]["data"];
+            return this.leaderboards[track_id][category_id];
         });
     }
 
@@ -108,13 +108,13 @@ export class Model {
 const asStandard = (type) => `standard-${type}`;
 
 export class Target {
-    constructor(type, value) {
+    constructor(type, value, model) {
         this.type = type;
         this.value = value;
-        this.entry = null; //a real or virtual leaderboard time representing the time to beat
+        this.model = model;
     }
 
-    updateEntry(entries, context) {
+    getMatchingEntry(entries, context) {
         if (this.type === '') {
             return null;
         }
@@ -138,7 +138,7 @@ export class Target {
                 name: asStandard(this.value)
             }
             if (context.track_id) {
-                const track = model.tracks.find(track => track.id === context.track_id);
+                const track = this.model.tracks.find(track => track.id === context.track_id);
                 const match = track?.standards
                     .filter(standard => standard.category_id === context.category_id)
                     .find(standard => standard.tier_id === parseInt(this.value))
@@ -147,7 +147,7 @@ export class Target {
             return syntheticEntry;
         }
         if (this.type === 'ctr4ever') {
-            return model.ctr4ever[context.track_id][context.category_id].find(entry => entry.name === this.value);
+            return this.model.ctr4ever[context.track_id][context.category_id].find(entry => entry.name === this.value);
         }
         if (this.type === 'user') {
             return entries.find(entry => entry.name === this.value);
@@ -169,8 +169,8 @@ export class Target {
                     paginate: true,
                     max_age: 3600,
                     params: {
-                        player1_id: model.players.find(player => player.name === username)["id"],
-                        player2_id: model.players.find(player => player.name === this.value)["id"]
+                        player1_id: this.model.players.find(player => player.name === username)["id"],
+                        player2_id: this.model.players.find(player => player.name === this.value)["id"]
                     }
                 })
             })
