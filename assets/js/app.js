@@ -272,6 +272,10 @@ async function autoRender() {
         }
     }
 
+    if (updateManual) {
+        saveFieldValues();
+    }
+
     render({
         session: null,
         goal: {time: target_time, type: target_label},
