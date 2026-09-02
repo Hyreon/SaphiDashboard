@@ -129,6 +129,10 @@ export class Model {
     userIdFromName(username) {
         return this.players.find(player => player.name === username)["id"];
     }
+
+    getStandard(standard_id) {
+        return this.standards.find(standard => standard.id === standard_id);
+    }
 }
 
 const asStandard = (type) => `standard-${type}`;
@@ -239,7 +243,7 @@ export class Target {
 
         let user_pbs = await this.model.loadPbs(focus.user_id, 1);
 
-        if (this.type === 'user') {
+        if (this.type === 'user' && this.value) {
             //return the simple matchup preview
 
             let target_pbs = await this.model.loadPbs(this.model.userIdFromName(this.value), 1);
@@ -249,19 +253,19 @@ export class Target {
             });
         }
 
-        if (this.type === 'rank') {
+        if (this.type === 'rank' && this.value) {
             return Totals.matchingRule(user_pbs, `rank ${this.value}`, (entry) => {
                 return entry.rank >= this.value; //ties are always wins
             })
         }
 
-        if (this.type === 'standard') {
-            return Totals.matchingRule(user_pbs, `standard-${this.value}`, (entry) => {
+        if (this.type === 'standard' && this.value) {
+            return Totals.matchingRule(user_pbs, `${this.model.getStandard(parseInt(this.value))["name"]} times`, (entry) => {
                 return entry.standard_id <= this.value; //ties are never wins
             })
         }
 
-        if (this.type === 'percentile') {
+        if (this.type === 'percentile' && this.value) {
             return Totals.matchingRule(user_pbs, `${this.value} %ile`, (entry) => {
                 return entry.percentile > this.value || (ties_are_wins && entry.percentile === this.value);
             })
