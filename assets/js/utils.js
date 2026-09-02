@@ -56,3 +56,22 @@ export function getRankString(num) {
             return `${num}th`;
     }
 }
+
+export function intersectionAlongParameter(set1, set2, parameter) {
+    return set1.filter(item => set2.some(item2 => item[parameter] === item2[parameter]));
+}
+
+export function matchingAll(set, item, parameters) {
+    parameters.forEach(parameter => {
+        set = set.filter(setItem => setItem[parameter] === item[parameter]);
+    })
+    return set;
+}
+
+export function first(container) {
+    if (container.length > 0) {
+        return container[0];
+    } else {
+        return null;
+    }
+}

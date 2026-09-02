@@ -1,6 +1,8 @@
 //Model has no awareness of HTML elements (with an exception for throbbers; I accept this for now)
 //TODO target should have a function or parameter with acccess to 'model'
 
+import {first, intersectionAlongParameter, matchingAll} from "./utils";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export class Model {
@@ -141,25 +143,6 @@ export class Focus {
         this.engine_id = engine_id;
     }
 
-}
-
-function intersectionAlongParameter(set1, set2, parameter) {
-    return set1.filter(item => set2.some(item2 => item[parameter] === item2[parameter]));
-}
-
-function matchingAll(set, item, parameters) {
-    parameters.forEach(parameter => {
-        set = set.filter(setItem => setItem[parameter] === item[parameter]);
-    })
-    return set;
-}
-
-function first(container) {
-    if (container.length > 0) {
-        return container[0];
-    } else {
-        return null;
-    }
 }
 
 export class Totals {
