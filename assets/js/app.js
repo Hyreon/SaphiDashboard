@@ -219,6 +219,11 @@ async function autoRender() {
         null
     );
 
+    const updateTotals = document.getElementById('update-totals').checked;
+    const updateManual = document.getElementById('update-manual').checked;
+
+    console.log(updateTotals, updateManual);
+
     let targetType = document.getElementById('target').value;
     let targetValue = undefined;
     if (targetType) {
@@ -236,14 +241,14 @@ async function autoRender() {
     const target_label_el = document.getElementById('target-label-set');
 
     const pb_match = entries.find(entry => entry.name === username);
-    if (pb_match) {
+    if (pb_match && updateManual) {
         //set the manual field as a side effect
         best_time_el.value = pb_match.time_formatted
     }
 
     const target_match = target.getMatchingEntry(entries, focus);
 
-    if (target_match) {
+    if (target_match && updateManual) {
         //set the manual field as a side effect
         target_time_el.value = target_match.time_formatted
     }
@@ -252,16 +257,21 @@ async function autoRender() {
     const target_time = (target_match ? target_match.time_formatted : null);
 
     const target_label = target.label(target_match);
-    target_label_el.value = target_label;
+    if (updateManual) { //even if blank, set it as blank
+        target_label_el.value = target_label;
+    }
 
-    const target_totals = await target.totals(focus, false);
-    if (target_totals) {
-      //set the manual field as a side effect
-      document.getElementById('completion-courses-set').value = target_totals.courses_won;
-      document.getElementById('completion-laps-set').value = target_totals.laps_won;
-      document.getElementById('completion-courses-total-set').value = target_totals.courses_total;
-      document.getElementById('completion-laps-total-set').value = target_totals.laps_total;
-      document.getElementById('completion-label-set').value = target_totals.label;
+    let target_totals = null;
+    if (updateTotals) {
+        target_totals = await target.totals(focus, false);
+        if (target_totals && updateManual) {
+            //set the manual field as a side effect
+            document.getElementById('completion-courses-set').value = target_totals.courses_won;
+            document.getElementById('completion-laps-set').value = target_totals.laps_won;
+            document.getElementById('completion-courses-total-set').value = target_totals.courses_total;
+            document.getElementById('completion-laps-total-set').value = target_totals.laps_total;
+            document.getElementById('completion-label-set').value = target_totals.label;
+        }
     }
 
     render({

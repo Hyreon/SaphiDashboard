@@ -114,7 +114,7 @@
         >
       </div>
       <div class="target-detail" data-target="percentile" hidden="hidden">
-        <label for="target-percentile" label="form-label">Percentile</label>
+        <label for="target-percentile" class="form-label">Percentile</label>
         <input 
           id="target-percentile"
           name="target-percentile"
@@ -184,10 +184,20 @@
     <div class="row-setting" id="rebind-region">
       <label for="rebind-button" class="form-label">Update button</label>
       <button id="rebind-button" class="btn">Not bound...</button>
-      <label class="form-label">*Use as Browser Source with OBS to get button presses off screen</label>
+      <!-- <label class="form-label">*Use as Browser Source with OBS to get button presses off screen</label> -->
     </div>
     <!-- TODO set whether manual fields are updated automatically with a checkbox -->
     <!-- TODO set whether ties are wins or losses with a dropdown menu -->
+    <div class="field-group">
+      <div>
+        <label for="update-totals" class="form-label">Update totals?</label>
+        <input type="checkbox" id="update-totals" checked>
+      </div>
+      <div>
+        <label for="update-manual" class="form-label">Update manual fields?</label>
+        <input type="checkbox" id="update-manual" checked>
+      </div>
+    </div>
     <div class="row-setting">
       <label for="load-auto" class="form-label">Confirm the above and load</label>
       <button id="load-auto" class="btn">Load</button>
