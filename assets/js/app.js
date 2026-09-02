@@ -188,6 +188,10 @@ function getCategory() {
     return parseInt(document.getElementById('category').value);
 }
 
+function getCollection() {
+    return document.getElementById('track-type').value;
+}
+
 const loadButton = document.getElementById('load-auto');
 loadButton.addEventListener('click', () => {
     autoRender()
@@ -205,6 +209,15 @@ async function autoRender() {
     const username = getUser();
     const track_id = getTrack();
     const category_id = getCategory();
+    const scope = getCollection();
+
+    const focus = new Focus(
+        model.userIdFromName(username),
+        scope,
+        track_id,
+        category_id,
+        null
+    );
 
     let targetType = document.getElementById('target').value;
     let targetValue = undefined;
@@ -227,14 +240,6 @@ async function autoRender() {
         //set the manual field as a side effect
         best_time_el.value = pb_match.time_formatted
     }
-
-    const focus = new Focus(
-        model.userIdFromName(username),
-        null,
-        track_id,
-        category_id,
-        null
-    );
 
     const target_match = target.getMatchingEntry(entries, focus);
 
@@ -268,10 +273,11 @@ async function autoRender() {
     });
 }
 
-function matches_track_type_filter(track_type) {
-    const track_type_filter = document.getElementById("track-type").value;
-    if (track_type_filter) {
-        return track_type === track_type_filter;
+function matches_track_type_filter(scope_target) {
+    const scope_base = getCollection();
+    console.log(scope_base, scope_target);
+    if (scope_base) {
+        return scope_target === scope_base;
     }
     return true;
 }
