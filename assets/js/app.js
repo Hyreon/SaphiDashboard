@@ -3,7 +3,7 @@
 import { init as initVoronoi } from '@hyreon/voronoi';
 import { init as initAiBadge } from '@hyreon/ai-badge';
 import {isValidTime, parseTime, formatTimeMask, getRankString} from './utils';
-import { Model, Target } from './model'; //Handles API calls; app has no awareness of these
+import {Focus, Model, Target} from './model'; //Handles API calls; app has no awareness of these
 import { init as initGamepadHooks } from './gamepad';
 
 let model = new Model();
@@ -206,7 +206,6 @@ async function autoRender() {
     const track_id = getTrack();
     const category_id = getCategory();
 
-
     let targetType = document.getElementById('target').value;
     let targetValue = undefined;
     if (targetType) {
@@ -217,7 +216,7 @@ async function autoRender() {
 
     let entries = await model.loadLeaderboard(track_id, category_id, target);
 
-    console.log(entries);
+    //TODO handle blank / none entries correctly
 
     const target_time_el = document.getElementById('target-time-set');
     const best_time_el = document.getElementById('personal-best-set');
@@ -229,11 +228,16 @@ async function autoRender() {
         best_time_el.value = pb_match.time_formatted
     }
 
-    const target_match = target.getMatchingEntry(entries, {
-        username: username,
-        track_id: track_id,
-        category_id: category_id
-    });
+    const focus = new Focus(
+        model.userIdFromName(username),
+        null,
+        track_id,
+        category_id,
+        null
+    );
+
+    const target_match = target.getMatchingEntry(entries, focus);
+
     if (target_match) {
         //set the manual field as a side effect
         target_time_el.value = target_match.time_formatted
@@ -245,20 +249,15 @@ async function autoRender() {
     const target_label = target.label(target_match);
     target_label_el.value = target_label;
 
-    const target_totals = null;
-    //TODO
-    //  store the relative difficulty of each goal track (at least by time away for now)
-    //  and then fill in those values from each fields' intended logic
-
-    // const target_totals = await target.totals(username);
-    // if (target_totals) {
-    //   //set the manual field as a side effect
-    //   document.getElementById('completion-courses-set').value = target_totals.courses_won;
-    //   document.getElementById('completion-laps-set').value = target_totals.laps_won;
-    //   document.getElementById('completion-courses-total-set').value = target_totals.courses_total;
-    //   document.getElementById('completion-laps-total-set').value = target_totals.laps_total;
-    //   document.getElementById('completion-label-set').value = target_totals.label;
-    // }
+    const target_totals = await target.totals(focus, false);
+    if (target_totals) {
+      //set the manual field as a side effect
+      document.getElementById('completion-courses-set').value = target_totals.courses_won;
+      document.getElementById('completion-laps-set').value = target_totals.laps_won;
+      document.getElementById('completion-courses-total-set').value = target_totals.courses_total;
+      document.getElementById('completion-laps-total-set').value = target_totals.laps_total;
+      document.getElementById('completion-label-set').value = target_totals.label;
+    }
 
     render({
         session: null,
