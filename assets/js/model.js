@@ -171,7 +171,6 @@ export class Totals {
 
         const courses = intersectionAlongParameter(pbs, target_pbs, "track_id").filter(c => c["category_id"] === 1);
         const laps = intersectionAlongParameter(pbs, target_pbs, "track_id").filter(c => c["category_id"] === 2);
-        console.log(courses, laps, target_pbs);
         const courses_won = courses
             .filter(c => rule(c,
                 first(matchingAll(target_pbs, c, ["track_id", "category_id"]))["time"]));
@@ -184,7 +183,6 @@ export class Totals {
     static matchingRule(pbs, label, rule) {
         const courses = pbs.filter(pb => pb["category_id"] === 1);
         const laps = pbs.filter(pb => pb["category_id"] === 2);
-        console.log(pbs);
         const courses_won = courses.filter(rule);
         const laps_won = laps.filter(rule);
         return new Totals(label, courses_won.length, courses.length, laps_won.length, laps.length);

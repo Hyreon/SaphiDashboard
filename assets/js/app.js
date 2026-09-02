@@ -222,8 +222,6 @@ async function autoRender() {
     const updateTotals = document.getElementById('update-totals').checked;
     const updateManual = document.getElementById('update-manual').checked;
 
-    console.log(updateTotals, updateManual);
-
     let targetType = document.getElementById('target').value;
     let targetValue = undefined;
     if (targetType) {
@@ -285,7 +283,6 @@ async function autoRender() {
 
 function matches_track_type_filter(scope_target) {
     const scope_base = getCollection();
-    console.log(scope_base, scope_target);
     if (scope_base) {
         return scope_target === scope_base;
     }
