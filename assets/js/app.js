@@ -260,6 +260,10 @@ const resizeObserver = new ResizeObserver((entries) => {
 
 resizeObserver.observe(overlay);
 
+function getCollection() {
+    return document.getElementById('track-type').value;
+}
+
 const loadButton = document.getElementById('load-auto');
 loadButton.addEventListener('click', () => {
     autoRender()
@@ -277,6 +281,18 @@ async function autoRender() {
     const username = getUser();
     const track_id = getTrack();
     const category_id = getCategory();
+    const scope = getCollection();
+
+    const focus = new Focus(
+        model.userIdFromName(username),
+        scope,
+        track_id,
+        category_id,
+        null
+    );
+
+    const updateTotals = document.getElementById('update-totals').checked;
+    const updateManual = document.getElementById('update-manual').checked;
 
     let targetType = document.getElementById('target').value;
     let targetValue = undefined;
@@ -295,22 +311,14 @@ async function autoRender() {
     const target_label_el = document.getElementById('target-label-set');
 
     const pb_match = entries.find(entry => entry.name === username);
-    if (pb_match) {
+    if (pb_match && updateManual) {
         //set the manual field as a side effect
         best_time_el.value = pb_match.time_formatted
     }
 
-    const focus = new Focus(
-        model.userIdFromName(username),
-        null,
-        track_id,
-        category_id,
-        null
-    );
-
     const target_match = target.getMatchingEntry(entries, focus);
 
-    if (target_match) {
+    if (target_match && updateManual) {
         //set the manual field as a side effect
         target_time_el.value = target_match.time_formatted
     }
@@ -319,16 +327,25 @@ async function autoRender() {
     const target_time = (target_match ? target_match.time_formatted : null);
 
     const target_label = target.label(target_match);
-    target_label_el.value = target_label;
+    if (updateManual) { //even if blank, set it as blank
+        target_label_el.value = target_label;
+    }
 
-    const target_totals = await target.totals(focus, false);
-    if (target_totals) {
-      //set the manual field as a side effect
-      document.getElementById('completion-courses-set').value = target_totals.courses_won;
-      document.getElementById('completion-laps-set').value = target_totals.laps_won;
-      document.getElementById('completion-courses-total-set').value = target_totals.courses_total;
-      document.getElementById('completion-laps-total-set').value = target_totals.laps_total;
-      document.getElementById('completion-label-set').value = target_totals.label;
+    let target_totals = null;
+    if (updateTotals) {
+        target_totals = await target.totals(focus, false);
+        if (target_totals && updateManual) {
+            //set the manual field as a side effect
+            document.getElementById('completion-courses-set').value = target_totals.courses_won;
+            document.getElementById('completion-laps-set').value = target_totals.laps_won;
+            document.getElementById('completion-courses-total-set').value = target_totals.courses_total;
+            document.getElementById('completion-laps-total-set').value = target_totals.laps_total;
+            document.getElementById('completion-label-set').value = target_totals.label;
+        }
+    }
+
+    if (updateManual) {
+        saveFieldValues();
     }
 
     render({
@@ -340,10 +357,10 @@ async function autoRender() {
     });
 }
 
-function matches_track_type_filter(track_type) {
-    const track_type_filter = document.getElementById("track-type").value;
-    if (track_type_filter) {
-        return track_type === track_type_filter;
+function matches_track_type_filter(scope_target) {
+    const scope_base = getCollection();
+    if (scope_base) {
+        return scope_target === scope_base;
     }
     return true;
 }
