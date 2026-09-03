@@ -2,7 +2,15 @@
 
 import { init as initVoronoi } from '@hyreon/voronoi';
 import { init as initAiBadge } from '@hyreon/ai-badge';
-import {isValidTime, parseTime, formatTimeMask, getRankString} from './utils';
+import {
+    isValidTime,
+    parseTime,
+    formatTimeMask,
+    setHidden,
+    reportCollisionsOfElementsById,
+    getScaleWidth, scaleText,
+    getRankString
+} from './utils';
 import {Focus, Model, Target} from './model'; //Handles API calls; app has no awareness of these
 import { init as initGamepadHooks } from './gamepad';
 
@@ -171,8 +179,7 @@ targetSelect.addEventListener('change', (event) => {
 function targetTypeSelected(value) {
     document.querySelectorAll('.target-detail').forEach(element => {
         const isHidden = element.dataset.target !== value;
-        element.style.display = isHidden ? 'none' : 'flex';
-        element.hidden = isHidden;
+        setHidden(element, isHidden);
     });
 }
 
@@ -187,6 +194,71 @@ function getTrack() {
 function getCategory() {
     return parseInt(document.getElementById('category').value);
 }
+
+const overlay = document.getElementById('overlay');
+const resizeObserver = new ResizeObserver((entries) => {
+    const hiddenElements = new Set();
+    reportCollisionsOfElementsById('completion-courses', ['overall-label'])
+        .forEach(item => {
+            hiddenElements.add(item)
+        });
+    reportCollisionsOfElementsById('completion-laps', ['overall-category'])
+        .forEach(item => hiddenElements.add(item));
+
+    const placeholders = document.getElementsByClassName('placeholder');
+    for (let el of placeholders) {
+        setHidden(el, false);
+        if (getScaleWidth(el) !== 1) {
+            hiddenElements.add(el);
+        }
+    }
+
+    const eyebrows = document.getElementsByClassName('eyebrow');
+    for (let el of eyebrows) {
+        setHidden(el, false);
+        if (getScaleWidth(el) !== 1) {
+            hiddenElements.add(el);
+        }
+    }
+
+    const subEyebrows = document.getElementsByClassName('eyebrow-sub');
+    for (let el of subEyebrows) {
+        setHidden(el, false);
+        if (getScaleWidth(el) !== 1) {
+            hiddenElements.add(el);
+        }
+    }
+
+    hiddenElements.forEach(el => {
+        setHidden(el, true);
+    })
+
+    let minScale = 1;
+    const mains = document.getElementsByClassName('main');
+    for (let el of mains) {
+        el.style.fontSize = '';
+        minScale = Math.min(minScale, getScaleWidth(el));
+    }
+    for (let el of mains) {
+        scaleText(el, minScale);
+    }
+
+    for (let el of eyebrows) {
+        scaleText(el, minScale);
+    }
+
+    const subs = document.getElementsByClassName('sub');
+    for (let el of subs) {
+        scaleText(el, minScale);
+    }
+
+    const fancySubs = document.getElementsByClassName('sub-fancy');
+    for (let el of fancySubs) {
+        scaleText(el, minScale);
+    }
+});
+
+resizeObserver.observe(overlay);
 
 function getCollection() {
     return document.getElementById('track-type').value;

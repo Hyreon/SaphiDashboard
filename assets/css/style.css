@@ -97,7 +97,7 @@ select {
 .overlay,
 .overlay-settings {
   display: flex;
-  flex: 0 0 var(--overlay-width);
+  flex: 0 0 auto;
   flex-direction: column;
 
   width: var(--overlay-width);
@@ -109,17 +109,20 @@ select {
 }
 
 .overlay {
-  height: 800px;
+  height: 530px;
   background-color: var(--color-overlay);
   background-image: repeating-linear-gradient(
     45deg,
     transparent 0 20px,
     rgb(255 255 255 / 2%) 20px 40px
   );
+
+  resize: both;
+  overflow: auto;
 }
 
 .overlay-settings {
-  height: 700px;
+  height: 720px;
   overflow-y: auto;
   background-color: var(--color-overlay-settings);
 }
@@ -322,7 +325,7 @@ select {
   font-family: var(--font-system);
   font-size: 14px;
   font-weight: 400;
-  line-height: 1.15;
+  line-height: 1.25;
 
   background-color: var(--color-input-background) !important;
   background-clip: padding-box;
