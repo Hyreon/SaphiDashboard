@@ -1,5 +1,5 @@
 import json
-from datetime import date, datetime
+from datetime import datetime
 
 import flask_cors
 import requests
@@ -7,6 +7,14 @@ import os
 import sqlite3
 from time import sleep
 import flask
+import logging
+
+HL_YELLOW = "\x1b[38;5;0;48;5;11m"  # Bold text, black font, yellow background
+HL_RESET  = "\x1b[0m"
+def highlight(string):
+    return HL_YELLOW + string + HL_RESET
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 DB_FILE = "api_state.db"
 TARGET_API = "https://www.projectsaphi.com/api/v2/"
@@ -26,7 +34,7 @@ try:
     with open("data/ctr4ever-data.json", "r", encoding="utf-8") as file:
         ctr4ever = json.load(file)
 except Exception as e:
-    print("Something went wrong while loading ctr4ever data file!")
+    logging.warning(f"Something went wrong while loading ctr4ever data file! {e}")
 
 class Endpoint:
 
@@ -39,19 +47,18 @@ class Endpoint:
         if self.params:  # not none or empty
             params_strings = [f"{x}={y}" for x, y in self.params.items()]
             suffix = "?" + "&".join(params_strings)
-        print(self.base_endpoint + suffix)
         return self.base_endpoint + suffix
 
 def safe_request(**kwargs):
     if limit[0] <= SAFETY_LIMIT:
-        print(f"Too many calls! Sleeping for {limit[1]}")
+        logging.warning(f"Too many calls! Sleeping for {limit[1]}")
         sleep(limit[1])
     ret = requests.get(**kwargs)
 
     # Extract rate limit headers safely (defaults to None if missing)
     limit[0] = int(ret.headers.get("X-RateLimit-Remaining"))
     limit[1] = int(ret.headers.get("X-RateLimit-Reset"))
-    print(limit)
+    logging.debug(f"Limit now at {limit[0]} / {limit[0] + limit[1]}")
 
     return ret
 
@@ -136,7 +143,6 @@ def has_more_pages(response_text):
     try:
         return response_json["meta"]["current_page"] < response_json["meta"]["total_pages"]
     except KeyError as e:
-        print(response_json)
         return False
 
 def fetch(endpoint, auth=True, timeout=3.0, max_age=60.0):
@@ -155,7 +161,6 @@ def fetch(endpoint, auth=True, timeout=3.0, max_age=60.0):
 
         # 304 means nothing changed; we don't need to re-download or insert a duplicate body
         if response.status_code == 304:
-            print(f"[Cache Validated] Server returned 304 Not Modified for '{endpoint_str}'.")
             db_action(
                 "UPDATE api_status SET timestamp = CURRENT_TIMESTAMP WHERE endpoint = ?",
                 (endpoint_str,)
@@ -187,13 +192,13 @@ def fetch(endpoint, auth=True, timeout=3.0, max_age=60.0):
 
     except (requests.exceptions.RequestException) as e:
         # 4. Fallback: If network/server fails or overloads, use local cache if available
-        print(f"[Warning] API unreachable or overloaded ({e}). Falling back to local cache...")
+        logging.warning(f"API unreachable or overloaded ({e}). Falling back to local cache...")
 
         if last_record:
             return last_record
 
         # If we have no local cache either, return None
-        print(f"[Error] No cached data available for '{endpoint_str}'.")
+        logging.error(f"No cached data available for '{endpoint_str}'.")
         return None
 
 def fetch_all(endpoint, auth=True, timeout=3.0, max_age=60.0):
@@ -209,7 +214,6 @@ def join_data(fetch_all_results):
     try:
         items = [json.loads(r[3]) for r in fetch_all_results]
         data = [entry for item in items for entry in item["data"]]
-        print([item["meta"] for item in items])
         timestamp = min([result[0] for result in fetch_all_results])  # oldest item shows how old the data can be
         return (timestamp, data)
     except Exception as e:
@@ -227,13 +231,24 @@ def to_ctr4ever_clean_name(track):
         return "N.Gin Labs"
     return track
 
-def get_flask_response():
-    data = flask.request.get_json(silent=True) or {}
 
-    print(f"Received data: {data}")
+def log_request(request):
+    endpoint = request["endpoint"]
+    params = request.get("params", {})
+    logging.info(f"Received request for {highlight(endpoint)}, params: {highlight(str(params))}")
+
+
+def handle_request():
+    in_data = flask.request.get_json(silent=True) or {}
+    log_request(in_data)
+    out_data = get_flask_response(in_data)
+    return out_data
+
+
+def get_flask_response(data):
 
     if "endpoint" not in data:
-        print("Missing endpoint!")
+        logging.error("Got a request with no endpoint!")
         return flask.jsonify({
             "status": "error",
             "message": "Missing required payload key 'endpoint'"
@@ -271,18 +286,16 @@ def get_flask_response():
             if last_record and isinstance(last_record[-1], str):
                 last_record[-1] = json.loads(last_record[-1])
     except Exception as e:
-        print(f"Processing error: {e}")
+        logging.error(f"Processing error: {e}")
         return flask.jsonify({
             "status": "error",
             "message": "Internal data processing failure"
         }), 500
 
     if last_record:
-        print(f"Timestamp: {last_record[0]}")
-        print(f"Data (str): {str(last_record[-1])[:100]}")
         return flask.jsonify({"status": "success", "timestamp": last_record[0], "data": last_record[-1]})
     else:
-        print("Unable to get a record.")
+        logging.warning("Unable to get a record.")
         return flask.jsonify({"status": "error", "message": "Nothing stored locally, and the Saphi API is down."}), 404
 
 @app.route('/webhook', methods=['POST', 'OPTIONS'])
@@ -294,9 +307,7 @@ def listen():
         resp.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         return resp
 
-    response = get_flask_response()
-    print(response)
-    return response
+    return handle_request()
 
 if __name__ == "__main__":
     init_db()

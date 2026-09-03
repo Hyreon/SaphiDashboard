@@ -106,7 +106,15 @@ export class Model {
             })
     }
 
-    async loadPbs(user_id, pool_id) {
+    async loadPbs(user_id, scope=null) {
+
+        if (scope === null) {
+            await this.loadPbs(user_id, "saphi");
+            await this.loadPbs(user_id, "community");
+            await this.loadPbs(user_id, "original");
+
+            return this.pbs[user_id].flat();
+        }
 
         return await apiAction({
             body: JSON.stringify({
@@ -115,14 +123,14 @@ export class Model {
                 use_cache: false,
                 params: {
                     user_id: user_id,
-                    collection_id: pool_id
+                    scope: scope
                 }
             })
         })
             .then(async data => {
-                this.pbs[username] ||= {};
-                this.pbs[username][pool_id] = data["data"];
-                return this.pbs[username][pool_id];
+                this.pbs[user_id] ||= {};
+                this.pbs[user_id][scope] = data["data"];
+                return this.pbs[user_id][scope];
             })
     }
 
@@ -139,9 +147,9 @@ const asStandard = (type) => `standard-${type}`;
 
 export class Focus {
 
-    constructor(user_id, collection_id, track_id, category_id, engine_id) {
+    constructor(user_id, scope, track_id, category_id, engine_id) {
         this.user_id = user_id;
-        this.collection_id = collection_id;
+        this.scope = scope;
         this.track_id = track_id;
         this.category_id = category_id;
         this.engine_id = engine_id;
@@ -163,7 +171,6 @@ export class Totals {
 
         const courses = intersectionAlongParameter(pbs, target_pbs, "track_id").filter(c => c["category_id"] === 1);
         const laps = intersectionAlongParameter(pbs, target_pbs, "track_id").filter(c => c["category_id"] === 2);
-        console.log(courses, laps, target_pbs);
         const courses_won = courses
             .filter(c => rule(c,
                 first(matchingAll(target_pbs, c, ["track_id", "category_id"]))["time"]));
@@ -176,7 +183,6 @@ export class Totals {
     static matchingRule(pbs, label, rule) {
         const courses = pbs.filter(pb => pb["category_id"] === 1);
         const laps = pbs.filter(pb => pb["category_id"] === 2);
-        console.log(pbs);
         const courses_won = courses.filter(rule);
         const laps_won = laps.filter(rule);
         return new Totals(label, courses_won.length, courses.length, laps_won.length, laps.length);
@@ -237,16 +243,12 @@ export class Target {
             return null;
         }
 
-        if (focus.collection_id !== null && focus.collection_id !== 1) { //TODO only Saphi works rn
-            return null;
-        }
-
-        let user_pbs = await this.model.loadPbs(focus.user_id, 1);
+        let user_pbs = await this.model.loadPbs(focus.user_id, focus.scope);
 
         if (this.type === 'user' && this.value) {
             //return the simple matchup preview
 
-            let target_pbs = await this.model.loadPbs(this.model.userIdFromName(this.value), 1);
+            let target_pbs = await this.model.loadPbs(this.model.userIdFromName(this.value), focus.scope);
 
             return Totals.matchup(user_pbs, target_pbs, `vs ${this.value}`, (entry, target_time) => {
                 return entry.time < target_time || (ties_are_wins && entry.time === target_time);
@@ -255,18 +257,18 @@ export class Target {
 
         if (this.type === 'rank' && this.value) {
             return Totals.matchingRule(user_pbs, `rank ${this.value}`, (entry) => {
-                return entry.rank >= this.value; //ties are always wins
+                return entry.rank <= this.value; //ties are always wins
             })
         }
 
         if (this.type === 'standard' && this.value) {
             return Totals.matchingRule(user_pbs, `${this.model.getStandard(parseInt(this.value))["name"]} times`, (entry) => {
-                return entry.standard_id <= this.value; //ties are never wins
+                return entry.standard_id && entry.standard_id <= this.value; //ties are never wins
             })
         }
 
         if (this.type === 'percentile' && this.value) {
-            return Totals.matchingRule(user_pbs, `${this.value} %ile`, (entry) => {
+            return Totals.matchingRule(user_pbs, `%ile of ${this.value}`, (entry) => {
                 return entry.percentile > this.value || (ties_are_wins && entry.percentile === this.value);
             })
         }
